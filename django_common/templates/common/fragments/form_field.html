@@ -1,0 +1,8 @@
+<div id="id_{{ form_field.html_name }}_container" class="formRow {% if css_classes %}{{ css_classes }}{% endif %} {% if form_field.errors %}errorRow{% endif %}">
+    {{ form_field.label_tag }}
+    <span class="inputs">{{ form_field }}</span>
+    {% if help_text %}<div class="help">{{ help_text }}</div>{% endif %}
+    <div id="id_error_container_{{ form_field.html_name }}" class="error_container">
+        {{ form_field.errors }}
+    </div>
+</div>
