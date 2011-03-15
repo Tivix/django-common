@@ -11,6 +11,8 @@ Django-common consists of the following things:
 	
 	- A ``SessionManagerBase`` base class, that helps in keeping your session related  code object-oriented and clean! See session.py for usage details.
 	
+	- An ``EmailBackend`` for authenticating users based on their email, apart from username.
+	
 	- Some custom db fields that you can use in your models including a ``UniqueHashField`` and ``RandomHashField``.
 	
 	- Bunch of helpful functions in helper.py
@@ -46,6 +48,13 @@ directory in your codebase.
 		# ...
 		"common_settings",
 	]
+
+- Add ``EmailBackend`` to the Django settings ``AUTHENTICATION_BACKENDS``::
+	
+	AUTHENTICATION_BACKENDS = (
+		'django_common.auth_backends.EmailBackend',
+		'django.contrib.auth.backends.ModelBackend'
+	)
 
 - Add ``WWWRedirectMiddleware`` if required to the list of middlewares::
 	
