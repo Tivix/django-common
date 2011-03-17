@@ -8,7 +8,7 @@ from django.template import Context, RequestContext
 from django.template.loader import get_template
 from django.core import exceptions
 
-from apps.common.tzinfo import utc, Pacific
+from django_common.tzinfo import utc, Pacific
 
 
 class AppException(exceptions.ValidationError):
