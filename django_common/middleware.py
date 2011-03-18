@@ -15,6 +15,7 @@ class WWWRedirectMiddleware(object):
 
 class SSLRedirectMiddleware(object):
     """Redirects all the requests that are non SSL to a SSL url"""
-    if not request.is_secure():
-        return HttpResponseRedirect('https://%s%s' % (django_settings.DOMAIN_NAME, request.get_full_path()))
-    return None
+    def process_request(self, request):
+        if not request.is_secure():
+            return HttpResponseRedirect('https://%s%s' % (django_settings.DOMAIN_NAME, request.get_full_path()))
+        return None
