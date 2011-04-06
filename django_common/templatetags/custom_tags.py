@@ -61,7 +61,19 @@ def render_form_field(parser, token):
 
 @register.simple_tag
 def active(request, pattern):
-    import re
-    if re.search(pattern, request.path):
+    """
+    Returns the string 'active' if pattern matches. Used to assign a css class in navigation bars to active tab/section
+    """
+    if request.path == pattern:
+        return 'active'
+    return ''
+
+@register.simple_tag
+def active_starts(request, pattern):
+    """
+    Returns the string 'active' if request url starts with pattern. Used to assign a css class in navigation bars to 
+    active tab/section
+    """
+    if request.path.startswith(pattern):
         return 'active'
     return ''
