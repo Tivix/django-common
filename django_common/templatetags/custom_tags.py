@@ -58,3 +58,10 @@ def render_form_field(parser, token):
         raise template.TemplateSyntaxError, "Unable to parse arguments for %r" % token.contents.split()[0]
     
     return FormFieldNode(form_field, help_text=help_text, css_classes=css_classes)
+
+@register.simple_tag
+def active(request, pattern):
+    import re
+    if re.search(pattern, request.path):
+        return 'active'
+    return ''
