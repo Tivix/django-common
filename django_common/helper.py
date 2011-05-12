@@ -12,12 +12,12 @@ from django_common.tzinfo import utc, Pacific
 
 
 class AppException(exceptions.ValidationError):
-  """Base class for exceptions used in our system.
-  
-  A common base class permits application code to distinguish between exceptions raised in our code from ones raised
-  in libraries.
-  """
-  pass
+    """Base class for exceptions used in our system.
+
+    A common base class permits application code to distinguish between exceptions raised in our code from ones raised
+    in libraries.
+    """
+    pass
 
 class InvalidContentType(AppException):
   def __init__(self, file_types, msg=None):
@@ -52,17 +52,17 @@ def form_errors_serialize(form):
   return {'errors': errors}
 
 def json_response(data={ }, errors=[ ], success=True):
-  data.update({
-    'errors': errors,
-    'success': len(errors) == 0 and success,
-  })
-  return simplejson.dumps(data)
+    data.update({
+        'errors': errors,
+        'success': len(errors) == 0 and success,
+    })
+    return simplejson.dumps(data)
 
 def sha224_hash():
-  return hashlib.sha224(os.urandom(224)).hexdigest()
+    return hashlib.sha224(os.urandom(224)).hexdigest()
 
 def sha1_hash():
-  return hashlib.sha1(os.urandom(224)).hexdigest()
+    return hashlib.sha1(os.urandom(224)).hexdigest()
 
 def md5_hash(image=None, max_length=None):
     # TODO:  Figure out how much entropy is actually needed, and reduce the current number of bytes if possible if doing
@@ -89,7 +89,7 @@ def send_mail(subject, message, from_email, recipient_emails):
     logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e))
 
 def send_mail_in_thread(subject, message, from_email, recipient_emails):
-  start_thread(send_mail, subject, message, from_email, recipient_emails)
+    start_thread(send_mail, subject, message, from_email, recipient_emails)
 
 def send_mail_using_template(subject, template_name, from_email, recipient_emails, context_map, in_thread=False):
     t = get_template(template_name)
@@ -100,7 +100,7 @@ def send_mail_using_template(subject, template_name, from_email, recipient_email
         return send_mail(subject, message, from_email, recipient_emails)
 
 def utc_to_pacific(timestamp):
-  return timestamp.replace(tzinfo=utc).astimezone(Pacific)
+    return timestamp.replace(tzinfo=utc).astimezone(Pacific)
 
 def pacific_to_utc(timestamp):
-  return timestamp.replace(tzinfo=Pacific).astimezone(utc)
+    return timestamp.replace(tzinfo=Pacific).astimezone(utc)
