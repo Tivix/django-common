@@ -3,6 +3,7 @@ from django.http import HttpResponseRedirect
 
 
 def ssl_required(allow_non_ssl=False):
+    """Views decorated with this will always get redirected to https except when allow_non_ssl is set to true."""
     def wrapper(view_func):
         def _checkssl(request, *args, **kwargs):
             # allow_non_ssl=True lets non-https requests to come through to this view (and hence not redirect)

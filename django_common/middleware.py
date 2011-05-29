@@ -9,9 +9,10 @@ class WWWRedirectMiddleware(object):
     Redirect requests for example from http://www.mysirw.com/* to http://mysite.com/*
     """
     def process_request(self, request):
-        if settings.IS_PROD and request.get_host() == '%s.%s' % (WWW, settings.DOMAIN_NAME):
-            return HttpResponsePermanentRedirect('http://%s%s' % (settings.DOMAIN_NAME, request.get_full_path()))
-        return None
+        if settings.IS_PROD and request.get_host() != settings.DOMAIN_NAME:
+            return HttpResponsePermanentRedirect('http%s://%s%s' % ('s' if request.is_secure() else '',\
+                settings.DOMAIN_NAME, request.get_full_path()))
+            return None
 
 class SSLRedirectMiddleware(object):
     """Redirects all the requests that are non SSL to a SSL url"""
