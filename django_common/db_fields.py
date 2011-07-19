@@ -74,8 +74,8 @@ class UniqueSlugField(fields.SlugField):
       return getattr(model_instance, self.name)
     
     # if this is a previously saved object, and current instance's slug is same as one being proposed
-    if getattr(model_instance, 'id') and getattr(model_instance, self.name) == prepopulate_value:
-      return self.__set_and_return(model_instance, self.name, slugify(prepopulate_value))
+    if getattr(model_instance, 'id') and getattr(model_instance, self.name) == slugify(prepopulate_value):
+      return getattr(model_instance, self.name)
     
     # if a unique slug is not required (not the default of course)
     if not self.unique:
