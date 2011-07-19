@@ -6,10 +6,13 @@ class SessionManagerBase(object):
     
     Ideally each app has a session.py that has this class and is used in the apps views etc.
     """
-    def __init__(self, request):
+    def __init__(self, request, prepend_key_with=''):
         self._session = request.session
+        self._prepend_key_with = prepend_key_with
   
     def _get_or_set(self, key, value):
+        key = '%s%s' % (self._prepend_key_with, key)
+        
         if not value is None:
             self._session[key] = value
             return value
@@ -17,5 +20,7 @@ class SessionManagerBase(object):
   
     def reset_keys(self):
         for key in self._SESSION_KEYS:
+            key = '%s%s' % (self._prepend_key_with, key)
+            
             if self._session.has_key(key):
                 del self._session[key]
