@@ -31,7 +31,7 @@ class JSONField(models.TextField):
         
         return value
     
-    def get_db_prep_save(self, value):
+    def get_db_prep_save(self, value, connection=None):
         """Convert our JSON object to a string before we save"""
         
         if value == "":
@@ -116,16 +116,17 @@ class RandomHashField(fields.CharField):
   
   @param update_on_save optional field whether to update this hash or not, everytime the model instance is saved
   """
-  def __init__(self, update_on_save=False, *args, **kwargs):
+  def __init__(self, update_on_save=False, hash_length=None, *args, **kwargs):
     #TODO: args & kwargs serve no purpose but to make django evolution to work
     self.update_on_save = update_on_save
-    super(fields.CharField, self).__init__(max_length=128, unique=True, blank=False, null=False, db_index=True, default=md5_hash())
+    self.hash_length = hash_length
+    super(fields.CharField, self).__init__(max_length=128, unique=True, blank=False, null=False, db_index=True, default=md5_hash(max_length=self.hash_length))
   
   def pre_save(self, model_instance, add):
     if not add and not self.update_on_save:
       return getattr(model_instance, self.name)
     
-    random_hash = md5_hash()
+    random_hash = md5_hash(max_length=self.hash_length)
     setattr(model_instance, self.name, random_hash)
     return random_hash
 
@@ -135,6 +136,7 @@ add_introspection_rules([
         [],         # Positional arguments (not used)
         {           # Keyword argument
             "update_on_save": ["update_on_save", {"default": False}],
+            "hash_length": ["hash_length", {"default": None}],
         },
     ),
 ], ["^django_common\.db_fields\.RandomHashField"])
