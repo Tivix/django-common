@@ -104,3 +104,44 @@ def utc_to_pacific(timestamp):
 
 def pacific_to_utc(timestamp):
     return timestamp.replace(tzinfo=Pacific).astimezone(utc)
+    
+
+def humanize_time_since(timestamp = None):
+    """Returns a fuzzy time since. Will only return the largest time. EX: 20 days, 14 min"""
+
+    timeDiff = datetime.datetime.now() - timestamp
+    days = timeDiff.days
+    hours = timeDiff.seconds/3600
+    minutes = timeDiff.seconds%3600/60
+    seconds = timeDiff.seconds%3600%60
+
+    str = ""
+    tStr = ""
+    if days > 0:
+        if days == 1:   tStr = "day"
+        else:           tStr = "days"
+        str = str + "%s %s" %(days, tStr)
+        return str
+    elif hours > 0:
+        if hours == 1:  tStr = "hour"
+        else:           tStr = "hours"
+        str = str + "%s %s" %(hours, tStr)
+        return str
+    elif minutes > 0:
+        if minutes == 1:tStr = "min"
+        else:           tStr = "mins"           
+        str = str + "%s %s" %(minutes, tStr)
+        return str
+    elif seconds > 0:
+        if seconds == 1:tStr = "sec"
+        else:           tStr = "secs"
+        str = str + "%s %s" %(seconds, tStr)
+        return str
+    else:
+        return str
+
+def chunks(l, n):
+    """ split successive n-sized chunks from a list."""
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]        
+
