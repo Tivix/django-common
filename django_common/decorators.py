@@ -1,3 +1,10 @@
+try:
+    from functools import wraps
+except ImportError:
+    from django.utils.functional import wraps
+
+import inspect
+
 from django.conf import settings
 from django.http import HttpResponseRedirect
 
@@ -12,4 +19,17 @@ def ssl_required(allow_non_ssl=False):
             return view_func(request, *args, **kwargs)
         
         return _checkssl
+    return wrapper
+
+def disable_for_loaddata(signal_handler):
+    """
+    See: https://code.djangoproject.com/ticket/8399
+    Disables signal from firing if its caused because of loaddata
+    """
+    @wraps(signal_handler)
+    def wrapper(*args, **kwargs):
+        for fr in inspect.stack():
+            if inspect.getmodulename(fr[1]) == 'loaddata':
+                return
+        signal_handler(*args, **kwargs)
     return wrapper
