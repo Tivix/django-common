@@ -93,7 +93,6 @@ def send_mail(subject, message, from_email, recipient_emails, files = None, html
         
   except Exception, e:
     # TODO:  Raise error again so that more information is included in the logs?
-    print 'Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e)
     logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e))
 
 def send_mail_in_thread(subject, message, from_email, recipient_emails, files = None, html=False):
