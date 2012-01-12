@@ -10,14 +10,23 @@ except ImportError:
     from setuptools.command.test import test
 
 
+import os
+
+here = os.path.dirname(os.path.abspath(__file__))
+f = open(os.path.join(here,  'README.rst'))
+long_description = f.read().strip()
+f.close()
+
 setup(
-    name='django-common',
+    name='django-common-helpers',
     version='0.1',
     author='Sumit Chachra',
     author_email='chachra@tivix.com',
     url='http://github.com/tivix/django-common',
     description = 'Common things every Django app needs!',
     packages=find_packages(),
+    long_description=long_description,
+    keywords = 'django',
     zip_safe=False,
     install_requires=[
         'Django>=1.2.3',

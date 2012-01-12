@@ -1,9 +1,9 @@
-=============
-django-common
-=============
+=======================
+django-common-helpers
+=======================
 
 Overview
---------
+---------
 
 Django-common consists of the following things:
 	
@@ -23,10 +23,9 @@ Django-common consists of the following things:
 
 
 Installation
-------------
+-------------
 
-- Install django_common (ideally in your virtualenv!) using pip or simply getting a copy of the code and putting it in a
-directory in your codebase.
+- Install django_common (ideally in your virtualenv!) using pip or simply getting a copy of the code and putting it in a directory in your codebase.
 
 - Add ``django_common`` to your Django settings ``INSTALLED_APPS``::
 	
