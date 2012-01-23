@@ -250,6 +250,6 @@ class Scaffold(object):
         
             
     def run(self):
-        #self.create_app()
-        #self.create_model()
+        self.create_app()
+        self.create_model()
         self.create_views()
