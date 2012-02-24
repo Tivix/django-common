@@ -3,24 +3,24 @@ from os import path, remove, system, listdir, sys
 # VIEW CONSTS
 
 LIST_VIEW = """
-def %(model)s_list(request, template='%(model)s/list.html'):
+def %(lower_model)s_list(request, template='%(lower_model)s/list.html'):
     d = {}
-    d['%(model)s_list'] = %(model)s.objects.all()
+    d['%(lower_model)s_list'] = %(model)s.objects.all()
     return render(request, template, d)
 """
 
 DETAILS_VIEW = """
-def %(model)s_details(request, id, template='%(model)s/details.html'):
+def %(lower_model)s_details(request, id, template='%(lower_model)s/details.html'):
     d = {}
-    d['%(model)s'] = %(model)s.objects.get(pk=id)
+    d['%(lower_model)s'] = %(model)s.objects.get(pk=id)
     return render(request, template, d)
 """
 
 DELETE_VIEW = """
-def %(model)s_delete(request, id):
+def %(lower_model)s_delete(request, id):
     item = %(model)s.objects.get(pk=id)
     item.delete()
-    return redirect(reverse('%(model)s_list'))
+    return redirect(reverse('%(lower_model)s_list'))
 """
 # MODELS CONSTS
 
@@ -63,6 +63,9 @@ FOREIGNFIELD_TEMPLATE = """
 """
 
 class Scaffold(object):
+
+    def _info(self, msg, indent=0):
+        print "%s %s" % ("\t"*int(indent), msg)
 
     def __init__(self, app, model, fields):
         self.app = app
@@ -172,84 +175,104 @@ class Scaffold(object):
                 default = None  
             return DATETIMEFIELD_TEMPLATE % {'name': field[1], 'null': null, 'default': default}
         elif field_type.lower() == 'foreign':
-            foreign = field[2]
+            foreign = field[1]
+            name = foreign.lower()
             # Check if this foreign key is already in models.py
             if self.is_imported('%s/%s/models.py' % (SCAFFOLD_APPS_DIR, self.app), foreign):
-                return FOREIGNFIELD_TEMPLATE % {'name': field[1], 'foreign': foreign}
+                return FOREIGNFIELD_TEMPLATE % {'name': name, 'foreign': foreign}
             # Check imports
             if self.get_import(foreign):
                 self.imports.append(self.get_import(foreign))
-                return FOREIGNFIELD_TEMPLATE % {'name': field[1], 'foreign': foreign}
+                return FOREIGNFIELD_TEMPLATE % {'name': name, 'foreign': foreign}
             
-            print "Foreign key '%s' was not found! Leaving scaffold..." % (foreign)
-            sys.exit(0)           
+            self._info('error\t%s/%s/models.py\t%s class not found' % (SCAFFOLD_APPS_DIR, self.app, field[1]), 1)
+            return None
     
     def create_app(self):
-        print "Searching app %s..." % self.app
+        self._info("    App    ")
+        self._info("===========")
         if not path.exists('%s/%s' % (SCAFFOLD_APPS_DIR, self.app)):
             system('python manage.py startapp %s' % self.app)
             system('mv %s %s/%s' % (self.app, SCAFFOLD_APPS_DIR, self.app))
-            print "Not found... Creating app %s..." % self.app
+            self._info("create\t%s/%s" % (SCAFFOLD_APPS_DIR, self.app), 1)
         else:
-            print "App %s was found..." % self.app
+            self._info("exists\t%s/%s" % (SCAFFOLD_APPS_DIR, self.app), 1)
     
     def create_views(self):
+        self._info("   Views   ")
+        self._info("===========")
         # Open models.py to read
-        path = '%s/%s/views.py' % (SCAFFOLD_APPS_DIR, self.app)
+        view_path = '%s/%s/views.py' % (SCAFFOLD_APPS_DIR, self.app)
+        
+        self._info("create\t%s" % (view_path), 1)
         
         import_list = list()
         view_list = list()
         
         # Add global imports
-        import_list.append('\n'.join(imp for imp in self.add_global_view_imports(path)))
+        import_list.append('\n'.join(imp for imp in self.add_global_view_imports(view_path)))
         
         # Add model imports
-        if not self.is_imported(path, self.model):
-                import_list.append(self.get_import(self.model))
+        if not self.is_imported(view_path, self.model):
+            import_list.append(self.get_import(self.model))
+        
+        lower_model = self.model.lower()
         
         # Check if view already exists
-        if not self.view_exists(path, "%s_view" % self.model):
-            view_list.append(LIST_VIEW % {'model': self.model})
+        if not self.view_exists(view_path, "%s_view" % lower_model):
+            view_list.append(LIST_VIEW % {'lower_model': lower_model, 'model': self.model})
+            self._info("added \t%s\t%s_view" % (view_path,lower_model), 1)
         
-        if not self.view_exists(path, "%s_details" % self.model):
-            view_list.append(DETAILS_VIEW % {'model': self.model})
+        if not self.view_exists(view_path, "%s_details" % lower_model):
+            view_list.append(DETAILS_VIEW % {'lower_model': lower_model, 'model': self.model})
+            self._info("added \t%s\t%s_details" % (view_path,lower_model), 1)
         
-        if not self.view_exists(path, "%s_delete" % self.model):
-            view_list.append(DELETE_VIEW % {'model': self.model})
+        if not self.view_exists(view_path, "%s_model" % lower_model):
+            view_list.append(DELETE_VIEW % {'lower_model': lower_model, 'model': self.model})
+            self._info("added \t%s\t%s_delete" % (view_path,lower_model), 1)
             
         # Open views.py to append
-        view_file = open(path, 'a')
+        view_file = open(view_path, 'a')
         
-        print "Saving views.py..."
         view_file.write('\n'.join(import_line for import_line in import_list))
         view_file.write(''.join(view for view in view_list))
         
     
     def create_model(self):
+        self._info("   Model   ")
+        self._info("===========")
         # Open models.py to read
         self.models_file = open('%s/%s/models.py' % (SCAFFOLD_APPS_DIR, self.app), 'r')
         
         # Check if model already exists
         for line in self.models_file.readlines():
             if 'class %s' % self.model in line:
-                print "Model '%s' in %s app already exists! Leaving scaffold..." % (self.model, self.app)
-                sys.exit(0)
+                self._info('exists\t%s/%s/models.py' % (SCAFFOLD_APPS_DIR, self.app), 1)
+                return
         
+        self._info('create\t%s/%s/models.py' % (SCAFFOLD_APPS_DIR, self.app), 1)
         # Prepare fields
         self.imports = list()
         fields = list()
         for field in self.fields:
-            fields.append(self.get_field(field))
+            new_field = self.get_field(field)
+            if new_field:
+                fields.append(new_field)
+                self._info('added\t%s/%s/models.py\t%s field' % (SCAFFOLD_APPS_DIR, self.app, field.split(':')[1]), 1)
             
         # Open models.py to append
         models_file = open('%s/%s/models.py' % (SCAFFOLD_APPS_DIR, self.app), 'a')
-            
-        print "Saving models.py..."
+        
         models_file.write(''.join(import_line for import_line in self.imports))
         models_file.write(MODEL_TEMPLATE % (self.model, ''.join(field for field in fields)))
         
             
     def run(self):
+        if not self.app:
+            sys.exit("No application name found...")
+        if not self.model:
+            sys.exit("No model name found...")
+            
         self.create_app()
         self.create_model()
         self.create_views()
