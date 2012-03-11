@@ -18,10 +18,10 @@ long_description = f.read().strip()
 f.close()
 
 setup(
-    name='django-common-helpers',
-    version='0.1',
-    author='Sumit Chachra',
-    author_email='chachra@tivix.com',
+    name='django-common-tivix',
+    version='0.1.2',
+    author='Matthew Farver',
+    author_email='mfarver@tivix.com',
     url='http://github.com/tivix/django-common',
     description = 'Common things every Django app needs!',
     packages=find_packages(),
