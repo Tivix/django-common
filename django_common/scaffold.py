@@ -1,17 +1,34 @@
-from os import path, remove, system, listdir, sys
+from os import path, remove, system, listdir, sys, mkdir
 
 # VIEW CONSTS
 
 LIST_VIEW = """
+from %(app)s.forms import %(model)sForm
 def %(lower_model)s_list(request, template='%(lower_model)s/list.html'):
     d = {}
+    d['form'] = %(model)sForm()
+    if request.method == 'POST':
+        form = %(model)sForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            d['form'] = form
     d['%(lower_model)s_list'] = %(model)s.objects.all()
     return render(request, template, d)
 """
 
 DETAILS_VIEW = """
+from %(app)s.forms import %(model)sForm
 def %(lower_model)s_details(request, id, template='%(lower_model)s/details.html'):
     d = {}
+    item = get_object_or_404(%(model)s, pk=id)
+    d['form'] = %(model)sForm(instance=item)
+    if request.method == 'POST':
+        form = %(model)sForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+        else:
+            d['form'] = form
     d['%(lower_model)s'] = %(model)s.objects.get(pk=id)
     return render(request, template, d)
 """
@@ -20,7 +37,7 @@ DELETE_VIEW = """
 def %(lower_model)s_delete(request, id):
     item = %(model)s.objects.get(pk=id)
     item.delete()
-    return redirect(reverse('%(lower_model)s_list'))
+    return redirect(reverse('%(lower_model)s-list'))
 """
 # MODELS CONSTS
 
@@ -60,6 +77,81 @@ DATETIMEFIELD_TEMPLATE = """
 
 FOREIGNFIELD_TEMPLATE = """
     %(name)s = models.ForeignKey(%(foreign)s)
+"""
+
+TEMPLATE_LIST_CONTENT = """
+{%% extends "base.html" %%}
+
+{%% block page-title %%}%(title)s{%% endblock %%}
+
+{%% block content %%}
+    <h1>%(title)s list</h1>
+    <table>
+    {%% for item in %(model)s_list %%}
+        <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item }}</td>
+            <td><a href="{%% url %(model)s-details item.id %%}">show</a></td>
+        </tr>
+    {%% endfor %%}
+    </table>
+    <br />
+    <form action="{%% url %(model)s-list %%}" method="POST">
+            {%% csrf_token %%}
+            {{ form }}
+            <input type="submit" value="Submit" />
+    </form>
+{%% endblock %%}
+"""
+
+TEMPLATE_DETAILS_CONTENT = """
+{%% extends "base.html" %%}
+
+{%% block page-title %%}%(title)s - {{ %(model)s }} {%% endblock %%}
+
+{%% block content %%}
+    <h1>%(title)s - {{ %(model)s }} </h1>
+    <table>
+        <tr>
+            <td>{{ %(model)s.id }}</td>
+            <td>{{ %(model)s }}</td>
+            <td><a href="{%% url %(model)s-delete %(model)s.id %%}">delete</a></td>
+        </tr>
+    </table>
+    <br />
+    <br />
+    <form action="{%% url %(model)s-details %(model)s.id %%}" method="POST">
+            {%% csrf_token %%}
+            {{ form }}
+            <input type="submit" value="Save" />
+    </form>
+    <br />
+    <a href="{%% url %(model)s-list %%}">back to list</a>
+{%% endblock %%}
+"""
+
+URL_CONTENT = """
+from django.conf.urls.defaults import *
+from django.contrib.auth import views as auth_views
+
+urlpatterns = patterns('%(app)s.views',
+    url(r'^%(model)s/$', '%(model)s_list', name='%(model)s-list'),
+    url(r'^%(model)s/(?P<id>\d+)/$', '%(model)s_details', name='%(model)s-details'),
+    url(r'^%(model)s/(?P<id>\d+)/delete/$', '%(model)s_delete', name='%(model)s-delete'),
+)
+"""
+
+ADMIN_CONTENT = """
+from %(app)s.models import %(model)s
+admin.site.register(%(model)s)
+"""
+
+FORM_CONTENT = """
+from %(app)s.models import %(model)s
+
+class %(model)sForm(forms.ModelForm):
+    class Meta:
+        model = %(model)s
 """
 
 class Scaffold(object):
@@ -204,7 +296,13 @@ class Scaffold(object):
         # Open models.py to read
         view_path = '%s/%s/views.py' % (SCAFFOLD_APPS_DIR, self.app)
         
-        self._info("create\t%s" % (view_path), 1)
+        # Check if urls.py exists
+        
+        if path.exists('%s/%s/views.py' % (SCAFFOLD_APPS_DIR, self.app)):
+           self._info('exists\t%s/%s/views.py' % (SCAFFOLD_APPS_DIR, self.app), 1)  
+        else:
+           file = open("%s/%s/views.py" % (SCAFFOLD_APPS_DIR, self.app), 'w')
+           self._info('create\t%s/%s/views.py' % (SCAFFOLD_APPS_DIR, self.app), 1)
         
         import_list = list()
         view_list = list()
@@ -219,17 +317,23 @@ class Scaffold(object):
         lower_model = self.model.lower()
         
         # Check if view already exists
-        if not self.view_exists(view_path, "%s_view" % lower_model):
-            view_list.append(LIST_VIEW % {'lower_model': lower_model, 'model': self.model})
+        if not self.view_exists(view_path, "%s_list" % lower_model):
+            view_list.append(LIST_VIEW % {'lower_model': lower_model, 'model': self.model, 'app': self.app})
             self._info("added \t%s\t%s_view" % (view_path,lower_model), 1)
-        
+        else:
+            self._info("exists\t%s\t%s_view" % (view_path,lower_model), 1)
+            
         if not self.view_exists(view_path, "%s_details" % lower_model):
-            view_list.append(DETAILS_VIEW % {'lower_model': lower_model, 'model': self.model})
+            view_list.append(DETAILS_VIEW % {'lower_model': lower_model, 'model': self.model, 'app': self.app})
             self._info("added \t%s\t%s_details" % (view_path,lower_model), 1)
+        else:
+            self._info("exists\t%s\t%s_details" % (view_path,lower_model), 1)
         
-        if not self.view_exists(view_path, "%s_model" % lower_model):
+        if not self.view_exists(view_path, "%s_delete" % lower_model):
             view_list.append(DELETE_VIEW % {'lower_model': lower_model, 'model': self.model})
             self._info("added \t%s\t%s_delete" % (view_path,lower_model), 1)
+        else:
+            self._info("exists\t%s\t%s_delete" % (view_path,lower_model), 1)
             
         # Open views.py to append
         view_file = open(view_path, 'a')
@@ -266,6 +370,104 @@ class Scaffold(object):
         models_file.write(''.join(import_line for import_line in self.imports))
         models_file.write(MODEL_TEMPLATE % (self.model, ''.join(field for field in fields)))
         
+    def create_templates(self):
+        self._info(" Templates ")
+        self._info("===========")
+        
+        # Check if template dir exists
+        
+        if path.exists('%s/%s/templates/' % (SCAFFOLD_APPS_DIR, self.app)):
+           self._info('exists\t%s/%s/templates/' % (SCAFFOLD_APPS_DIR, self.app), 1)  
+        else:
+           mkdir("%s/%s/templates/" % (SCAFFOLD_APPS_DIR, self.app)) 
+           self._info('create\t%s/%s/templates/' % (SCAFFOLD_APPS_DIR, self.app), 1) 
+           
+        # Check if model template dir exists
+        
+        if path.exists('%s/%s/templates/%s/' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower())):
+           self._info('exists\t%s/%s/templates/%s/' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)  
+        else:
+           mkdir("%s/%s/templates/%s/" % (SCAFFOLD_APPS_DIR, self.app, self.model.lower())) 
+           self._info('create\t%s/%s/templates/%s/' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1) 
+        
+        # Check if list.html exists
+        
+        if path.exists('%s/%s/templates/%s/list.html' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower())):
+           self._info('exists\t%s/%s/templates/%s/list.html' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)  
+        else:
+           file = open("%s/%s/templates/%s/list.html" % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 'w') 
+           file.write(TEMPLATE_LIST_CONTENT % {'model': self.model.lower(), 'title': self.model.lower()})
+           self._info('create\t%s/%s/templates/%s/list.html' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1) 
+           
+        # Check if details.html exists
+        
+        if path.exists('%s/%s/templates/%s/details.html' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower())):
+           self._info('exists\t%s/%s/templates/%s/details.html' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)  
+        else:
+           file = open("%s/%s/templates/%s/details.html" % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 'w') 
+           file.write(TEMPLATE_DETAILS_CONTENT % {'model': self.model.lower(), 'title': self.model.lower()})
+           self._info('create\t%s/%s/templates/%s/details.html' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1) 
+           
+    def create_urls(self):
+        self._info("    URLs   ")
+        self._info("===========")
+        
+        # Check if urls.py exists
+        
+        if path.exists('%s/%s/urls.py' % (SCAFFOLD_APPS_DIR, self.app)):
+           self._info('exists\t%s/%s/urls.py' % (SCAFFOLD_APPS_DIR, self.app), 1)  
+        else:
+           file = open("%s/%s/urls.py" % (SCAFFOLD_APPS_DIR, self.app), 'w') 
+           file.write(URL_CONTENT % {'app': self.app, 'model': self.model.lower()})
+           self._info('create\t%s/%s/urls.py' % (SCAFFOLD_APPS_DIR, self.app), 1)
+           
+    def create_admin(self):
+        self._info("    Admin  ")
+        self._info("===========")
+        
+        # Check if admin.py exists
+        
+        if path.exists('%s/%s/admin.py' % (SCAFFOLD_APPS_DIR, self.app)):
+           self._info('exists\t%s/%s/admin.py' % (SCAFFOLD_APPS_DIR, self.app), 1)  
+        else:
+           file = open("%s/%s/admin.py" % (SCAFFOLD_APPS_DIR, self.app), 'w') 
+           file.write("from django.contrib import admin\n")
+           self._info('create\t%s/%s/urls.py' % (SCAFFOLD_APPS_DIR, self.app), 1)
+           
+        # Check if admin entry already exists
+        
+        content = open("%s/%s/admin.py" % (SCAFFOLD_APPS_DIR, self.app), 'r').read()
+        if "admin.site.register(%s)" % self.model in content:
+            self._info('exists\t%s/%s/admin.py\t%s' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)  
+        else:
+            file = open("%s/%s/admin.py" % (SCAFFOLD_APPS_DIR, self.app), 'a') 
+            file.write(ADMIN_CONTENT % {'app': self.app, 'model': self.model})
+            self._info('added\t%s/%s/admin.py\t%s' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1) 
+            
+    def create_forms(self):
+        self._info("    Forms  ")
+        self._info("===========")
+        
+        # Check if forms.py exists
+        
+        if path.exists('%s/%s/forms.py' % (SCAFFOLD_APPS_DIR, self.app)):
+           self._info('exists\t%s/%s/forms.py' % (SCAFFOLD_APPS_DIR, self.app), 1)  
+        else:
+           file = open("%s/%s/forms.py" % (SCAFFOLD_APPS_DIR, self.app), 'w') 
+           file.write("from django import forms\n")
+           self._info('create\t%s/%s/forms.py' % (SCAFFOLD_APPS_DIR, self.app), 1)
+           
+        # Check if form entry already exists
+        
+        content = open("%s/%s/forms.py" % (SCAFFOLD_APPS_DIR, self.app), 'r').read()
+        if "class %sForm" % self.model in content:
+            self._info('exists\t%s/%s/forms.py\t%s' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)  
+        else:
+            file = open("%s/%s/forms.py" % (SCAFFOLD_APPS_DIR, self.app), 'a') 
+            file.write(FORM_CONTENT % {'app': self.app, 'model': self.model})
+            self._info('added\t%s/%s/admin.py\t%s' % (SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1) 
+        
+           
             
     def run(self):
         if not self.app:
@@ -276,3 +478,7 @@ class Scaffold(object):
         self.create_app()
         self.create_model()
         self.create_views()
+        self.create_admin()
+        self.create_forms()
+        self.create_urls()
+        self.create_templates()
