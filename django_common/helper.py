@@ -78,33 +78,35 @@ def start_thread(target, *args):
    t.setDaemon(True)
    t.start()
 
-def send_mail(subject, message, from_email, recipient_emails, files = None, html=False):
+def send_mail(subject, message, from_email, recipient_emails, files = None, html=False, reply_to=None, bcc=None):
   import django.core.mail
   try:
     logging.debug('Sending mail to: %s' % recipient_emails)
     logging.debug('Message: %s' % message)
-    email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails)
+    email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails, bcc)
     if html:
         email.content_subtype = "html"
     if files:
         for file in files:
             email.attach_file(file)
+    if reply_to:
+        email.extra_headers = {'Reply-To': reply_to}
     email.send()
         
   except Exception, e:
     # TODO:  Raise error again so that more information is included in the logs?
     logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e))
 
-def send_mail_in_thread(subject, message, from_email, recipient_emails, files = None, html=False):
-    start_thread(send_mail, subject, message, from_email, recipient_emails, files, html)
+def send_mail_in_thread(subject, message, from_email, recipient_emails, files = None, html=False, reply_to=None, bcc=None):
+    start_thread(send_mail, subject, message, from_email, recipient_emails, files, html, reply_to, bcc)
 
-def send_mail_using_template(subject, template_name, from_email, recipient_emails, context_map, in_thread=False, files = None, html=False):
+def send_mail_using_template(subject, template_name, from_email, recipient_emails, context_map, in_thread=False, files = None, html=False, reply_to=None, bcc=None):
     t = get_template(template_name)
     message = t.render(Context(context_map))
     if in_thread:
-        return send_mail_in_thread(subject, message, from_email, recipient_emails, files, html)
+        return send_mail_in_thread(subject, message, from_email, recipient_emails, files, html, reply_to, bcc)
     else:
-        return send_mail(subject, message, from_email, recipient_emails, files, html)
+        return send_mail(subject, message, from_email, recipient_emails, files, html, reply_to, bcc)
 
 def utc_to_pacific(timestamp):
     return timestamp.replace(tzinfo=utc).astimezone(Pacific)
