@@ -1,7 +1,13 @@
-<div id="id_{{ form_field.html_name }}_container" class="formRow clearfix {% if css_classes %}{{ css_classes }}{% endif %} {% if form_field.errors %}error{% endif %}">
+<div id="id_{{ form_field.html_name }}_container" class="control-group formRow clearfix {% if css_classes %}{{ css_classes }}{% endif %} {% if form_field.errors %}error{% endif %}">
     {{ form_field.label_tag }}
+
     <div class="input">{{ form_field }}
-    	{% if help_text %}<span class="help-inline">{{ help_text }}</span>{% endif %}
-    	{% if form_field.errors %}<span class="help-inline">{{ form_field.errors }}</span>{% endif %}
+        {% if help_text %}
+            <span class="help-inline">{{ help_text }}</span>
+        {% endif %}
+
+        {% if form_field.errors %}
+            <span class="help-inline">{{ form_field.errors }}</span>
+        {% endif %}
     </div>
 </div>
