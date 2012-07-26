@@ -1,4 +1,4 @@
-from os import path, remove, system, listdir, sys, mkdir
+from os import path, system, listdir, sys, mkdir
 from django.conf import settings
 # VIEW CONSTS
 
@@ -10,9 +10,11 @@ def %(lower_model)s_list(request, template='%(lower_model)s/list.html'):
     if request.method == 'POST':
         form = %(model)sForm(request.POST)
         if form.is_valid():
-            form.save()
+            item = form.save()
+            return JsonResponse(data={'id': item.id, 'name': str(item), 'form': %(model)sForm().as_p(), 'token': get_token(request)})
         else:
             d['form'] = form
+            return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
     d['%(lower_model)s_list'] = %(model)s.objects.all()
     return render(request, template, d)
 """
@@ -26,9 +28,11 @@ def %(lower_model)s_details(request, id, template='%(lower_model)s/details.html'
     if request.method == 'POST':
         form = %(model)sForm(request.POST, instance=item)
         if form.is_valid():
-            form.save()
+            item = form.save()
+            return JsonResponse(data={'form': %(model)sForm(instance=item).as_p(), 'token': get_token(request)})
         else:
             d['form'] = form
+            return JsonResponse(data={'form': d['form'].as_p(), 'token': get_token(request)}, success=False)
     d['%(lower_model)s'] = %(model)s.objects.get(pk=id)
     return render(request, template, d)
 """
@@ -37,7 +41,7 @@ DELETE_VIEW = """
 def %(lower_model)s_delete(request, id):
     item = %(model)s.objects.get(pk=id)
     item.delete()
-    return redirect(reverse('%(lower_model)s-list'))
+    return JsonResponse()
 """
 # MODELS CONSTS
 
@@ -83,22 +87,50 @@ TEMPLATE_LIST_CONTENT = """
 {%% block page-title %%}%(title)s{%% endblock %%}
 
 {%% block content %%}
-    <h1>%(title)s list</h1>
-    <table>
+    <h1>%(model)s list</h1><br />
+    <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
+        <tr style="background-color: #DDD">
+            <th style="padding: 10px;">ID</th>
+            <th>Name</th>
+            <th>Action</th>
+        </tr>
     {%% for item in %(model)s_list %%}
         <tr>
-            <td>{{ item.id }}</td>
+            <td style="padding: 10px;">{{ item.id }}</td>
             <td>{{ item }}</td>
             <td><a href="{%% url %(model)s-details item.id %%}">show</a></td>
         </tr>
     {%% endfor %%}
     </table>
     <br />
-    <form action="{%% url %(model)s-list %%}" method="POST">
-            {%% csrf_token %%}
-            {{ form }}
-            <input type="submit" value="Submit" />
-    </form>
+    <input type="button" onclick="$('#add-form-div').toggle();" value="Add new %(model)s"><br /><br />
+    <div id="add-form-div" style="display: none;">
+        <form action="{%% url %(model)s-list %%}" method="POST" id="add-form">
+                <div id="form-fields">
+                    {%% csrf_token %%}
+                    {{ form }}
+                </div>
+                <input type="submit" value="Submit" />
+        </form>
+    </div>
+
+    <script type="text/javascript">
+        (new FormHelper('add-form')).bind_for_ajax(
+            function(data) {
+                $('#item-list').append('<td style="padding: 10px;">' + data.id + '</td><td>' + data.name + '</td><td><a href="{%% url %(model)s-list %%}' + data.id + '/">show</a></td>').hide().fadeIn();
+                $('#form-fields').html('');
+                $('#form-fields').append('<input type="hidden" value="' + data.token + '" name="csrfmiddlewaretoken">');
+                $('#form-fields').append(data.form);
+                $('#add-form-div').toggle();
+            },
+            function(data) {
+                $('#form-fields').html('');
+                $('#form-fields').append('<input type="hidden" value="' + data.token + '" name="csrfmiddlewaretoken">');
+                $('#form-fields').append(data.form).hide().fadeIn();
+                $('#add-form input[type=submit]').removeAttr('disabled');
+            }
+        );
+    </script>
 {%% endblock %%}
 """
 
@@ -108,22 +140,57 @@ TEMPLATE_DETAILS_CONTENT = """
 {%% block page-title %%}%(title)s - {{ %(model)s }} {%% endblock %%}
 
 {%% block content %%}
-    <h1>%(title)s - {{ %(model)s }} </h1>
-    <table>
-        <tr>
-            <td>{{ %(model)s.id }}</td>
-            <td>{{ %(model)s }}</td>
-            <td><a href="{%% url %(model)s-delete %(model)s.id %%}">delete</a></td>
-        </tr>
-    </table>
-    <br />
-    <br />
-    <form action="{%% url %(model)s-details %(model)s.id %%}" method="POST">
-            {%% csrf_token %%}
-            {{ form }}
-            <input type="submit" value="Save" />
-    </form>
-    <br />
+    <div class="item">
+        <h1>%(model)s - {{ %(model)s }} </h1><br />
+        <table style="border: solid 1px gray; width: 300px; text-align: center;" id="item-list">
+            <tr style="background-color: #DDD">
+                <th style="padding: 10px;">ID</th>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+            <tr>
+                <td style="padding: 10px;">{{ %(model)s.id }}</td>
+                <td>{{ %(model)s }}</td>
+                <td><input type="button" href="{%% url %(model)s-delete %(model)s.id %%}" id="delete-item" value="delete" /></td>
+            </tr>
+        </table>
+        <br />
+        <br />
+        <br />
+        <input type="button" onclick="$('#add-form-div').toggle();" value="Edit %(model)s"><br /><br />
+        <div id="add-form-div" style="display: none;">
+            <form action="{%% url %(model)s-details %(model)s.id %%}" method="POST" id="add-form">
+                    <div id="form-fields">
+                        {%% csrf_token %%}
+                        {{ form }}
+                    </div>
+                    <input type="submit" value="Submit" />
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (new FormHelper('add-form')).bind_for_ajax(
+            function(data) {
+                $('#form-fields').html('');
+                $('#form-fields').append('<input type="hidden" value="' + data.token + '" name="csrfmiddlewaretoken">');
+                $('#form-fields').append(data.form).hide().fadeIn();
+                $('#add-form input[type=submit]').removeAttr('disabled');
+            },
+            function(data) {
+                $('#form-fields').html('');
+                $('#form-fields').append('<input type="hidden" value="' + data.token + '" name="csrfmiddlewaretoken">');
+                $('#form-fields').append(data.form).hide().fadeIn();
+                $('#add-form input[type=submit]').removeAttr('disabled');
+            }
+        );
+        $('#delete-item').click(function() {
+            $.get($(this).attr('href'), function(data) {
+                $('div.item').before('<h1>Item removed</h1><br /><br />');
+                $('div.item').remove();
+            });
+        });
+    </script>
     <a href="{%% url %(model)s-list %%}">back to list</a>
 {%% endblock %%}
 """
@@ -200,6 +267,8 @@ class Scaffold(object):
         need_import_shortcut = True
         need_import_urlresolvers = True
         need_import_users = True
+        need_import_token = True
+        need_import_JsonResponse = True
         
         for line in import_file.readlines():
             if 'from django.shortcuts import render, redirect, get_object_or_404' in line:
@@ -208,6 +277,10 @@ class Scaffold(object):
                 need_import_urlresolvers = False
             if 'from django.contrib.auth.models import User, Group' in line:
                 need_import_users = False
+            if 'from django.middleware.csrf import get_token' in line:
+                need_import_token = False
+            if 'from django_common.http import JsonResponse' in line:
+                need_import_JsonResponse = False
         
         if need_import_shortcut:
             import_list.append('from django.shortcuts import render, redirect, get_object_or_404')
@@ -215,6 +288,10 @@ class Scaffold(object):
             import_list.append('from django.core.urlresolvers import reverse')
         if need_import_users:
             import_list.append('from django.contrib.auth.models import User, Group')
+        if need_import_token:
+            import_list.append('from django.middleware.csrf import get_token')
+        if need_import_JsonResponse:
+            import_list.append('from django_common.http import JsonResponse')
             
         return import_list
         
