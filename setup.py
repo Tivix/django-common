@@ -32,7 +32,7 @@ setup(
         'Django>=1.2.3',
         'South>=0.7.2'
     ],
-    # test_suite = 'django_common.tests',
+    test_suite = 'django_common.tests',
     include_package_data=True,
     # cmdclass={},
     classifiers=[
