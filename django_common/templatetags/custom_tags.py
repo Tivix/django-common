@@ -24,10 +24,11 @@ class FormFieldNode(template.Node):
       return ''
     
     widget = form_field.field.widget
-    
-    if isinstance(widget, widgets.RadioSelect) or isinstance(widget, widgets.CheckboxSelectMultiple)\
+    if isinstance(widget, widgets.CheckboxSelectMultiple)\
         or isinstance(widget, widgets.CheckboxInput):
-        t = get_template('common/fragments/radio_checkbox_field.html')
+        t = get_template('common/fragments/checkbox_field.html')
+    elif isinstance(widget, widgets.RadioSelect):
+        t = get_template('common/fragments/radio_field.html')
     else:
         t = get_template('common/fragments/form_field.html')
     return t.render(Context({
