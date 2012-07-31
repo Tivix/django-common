@@ -45,7 +45,7 @@ Installation
 	
 	TEMPLATE_CONTEXT_PROCESSORS = [
 		# ...
-		"common_settings",
+		'django_common.context_processors.common_settings',
 	]
 
 - Add ``EmailBackend`` to the Django settings ``AUTHENTICATION_BACKENDS``::
