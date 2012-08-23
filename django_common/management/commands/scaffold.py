@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from optparse import make_option
 
 from django_common.scaffold import Scaffold
+from django_common import settings
 
 
 class Command(BaseCommand):
@@ -16,3 +17,6 @@ class Command(BaseCommand):
             return
         scaffold = Scaffold(args[0], options['model'], args)
         scaffold.run()
+
+    def get_version(self):
+        return 'django-common version: %s' % settings.VERSION
