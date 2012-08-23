@@ -658,14 +658,13 @@ class Scaffold(object):
     def run(self):
         if not self.app:
             sys.exit("No application name found...")
-        if not self.model:
-            sys.exit("No model name found...")
 
         self.create_app()
-        self.create_model()
-        self.create_views()
-        self.create_admin()
-        self.create_forms()
-        self.create_urls()
-        self.create_templates()
-        self.create_tests()
+        if self.model:
+            self.create_model()
+            self.create_views()
+            self.create_admin()
+            self.create_forms()
+            self.create_urls()
+            self.create_templates()
+            self.create_tests()
