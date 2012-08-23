@@ -658,7 +658,8 @@ class Scaffold(object):
     def run(self):
         if not self.app:
             sys.exit("No application name found...")
-
+        if not self.app.isalnum():
+            sys.exit("Model name should be alphanumerical...")
         self.create_app()
         if self.model:
             self.create_model()
