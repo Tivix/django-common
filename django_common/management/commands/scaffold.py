@@ -8,7 +8,24 @@ from django_common import settings
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--model', default=None, dest='model', help='Model name'),
+        make_option('--model', default=None, dest='model', \
+            help="""model name - only one model name per run is allowed. \n
+            It requires additional fields parameters:
+
+            char - CharField \t\t\t\t
+            text - TextField \t\t\t\t
+            int - IntegerFIeld \t\t\t\t
+            decimal -DecimalField \t\t\t\t
+            datetime - DateTimeField \t\t\t\t
+            foreign - ForeignKey \t\t\t\t
+
+            Example usages: \t\t\t\t
+
+                --model forum char:title  text:body int:posts datetime:create_date \t\t
+                --model blog foreign:blog:Blog, foreign:post:Post, foreign:added_by:User \t\t
+                --model finance decimal:total_cost:10:2
+
+            """),
     )
 
     def handle(self, *args, **options):

@@ -406,7 +406,7 @@ class Scaffold(object):
             # Check if this foreign key is already in models.py
             if foreign in ('User', 'Group'):
                 if not self.is_imported('%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, self.app), foreign):
-                    self.imports.append('from django.contrib.auth.models import User, Group')
+                    self.imports.append('\nfrom django.contrib.auth.models import User, Group\n')
                 return FOREIGNFIELD_TEMPLATE % {'name': name, 'foreign': foreign, 'null': 'True'}
             if self.is_imported('%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, self.app), foreign):
                 return FOREIGNFIELD_TEMPLATE % {'name': name, 'foreign': foreign, 'null': 'True'}
