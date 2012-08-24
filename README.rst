@@ -105,7 +105,7 @@ Two fields ``foreign`` and ``decimal`` requires additional parameters:
 
 NOTICE: All foreign key models must alread exist in project. User and Group model are imported automatically.
 
-- decimal field requires two more arguments max_digits and decimal_places, exmaple::
+- decimal field requires two more arguments ``max_digits`` and ``decimal_places``, example::
     
     decimal:total_cost:10:2
 
@@ -113,21 +113,18 @@ NOTICE: To all models scaffold automatically adds two fields: update_date and cr
 
 4. How it works?
 
-Scaffold creates models, views (CRUD), forms, templates, admin, urls and basic tests. Scaffold templates are using two blocks extending from base.html: 
+Scaffold creates models, views (CRUD), forms, templates, admin, urls and basic tests (CRUD). Scaffold templates are using two blocks extending from base.html::
 
-{% extends "base.html" %}
-{% block page-title %} {% endblock %} for title page
-{% block conent %} for site content
+    {% extends "base.html" %}
+    {% block page-title %} {% endblock %}
+    {% block conent %} {% endblock %}
 
 So be sure you have your base.html set up properly.
 
-Scaffold uses ajax forms 
+Scaffolding example usage
+-------------------------
 
-5. Example usage
-
-FULL EXAMPLE:
-
-Let's create very simple ``forum`` app. We need Forum, Topic and Post model.
+Let's create very simple ``forum`` app. We need ``Forum``, ``Topic`` and ``Post`` model.
 
 - Forum model
 
@@ -137,19 +134,19 @@ Forum model needs just one field ``name``::
 
 - Topic model
 
-Topics are created by site users so we need: created_by, title and Forum foreign key (update_date and create_date are always added to models)::
+Topics are created by site users so we need: ``created_by``, ``title`` and ``Forum`` foreign key (``update_date`` and ``create_date`` are always added to models)::
 
     python manage.py scaffold forum --model Topic foreign:created_by:User char:title foreign:forum:Forum
 
 - Post model
 
-Last one are Posts. Posts are related to Topics. Here we need: title, body, created_by and foreign key to Topic::
+Last one are Posts. Posts are related to Topics. Here we need: ``title``, ``body``, ``created_by`` and foreign key to ``Topic``::
 
     python manage.py scaffold forum --model Post char:title text:body foreign:created_by:User foreign:topic:Topic
 
 All data should be in place!
 
-Now you must add "forum" app to ``INSTALLED_APPS`` and include app in urls.py file by adding into urlpatterns::
+Now you must add ``forum`` app to ``INSTALLED_APPS`` and include app in ``urls.py`` file by adding into urlpatterns::
 
     urlpatterns = patterns('',
         ...
@@ -173,8 +170,6 @@ All structure are in place. Now you can personalize models, templates and urls.
 At the end you can test new app by runing test::
 
     python manage.py test forum
-
-You should see no errors at all::
 
     Creating test database for alias 'default'...
     .......
