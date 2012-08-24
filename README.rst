@@ -84,14 +84,14 @@ MODELNAME is model name. Just enter model name that you want to create (for exam
 
 3. Field types
 
-Available fields:
-
-char - CharField
-text - TextField
-int - IntegerFIeld
-decimal -DecimalField
-datetime - DateTimeField
-foreign - ForeignKey
+Available fields::
+    
+    char - CharField
+    text - TextField
+    int - IntegerFIeld
+    decimal -DecimalField
+    datetime - DateTimeField
+    foreign - ForeignKey
 
 All fields requires name that is provided after ``:`` sign, for example::
 
