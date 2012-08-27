@@ -9,6 +9,7 @@ except ImportError:
     from setuptools import setup, find_packages
     from setuptools.command.test import test
 
+from django_common import settings
 
 import os
 
@@ -19,7 +20,7 @@ f.close()
 
 setup(
     name='django-common-tivix',
-    version='0.1.2',
+    version=settings.VERSION,
     author='Matthew Farver',
     author_email='mfarver@tivix.com',
     url='http://github.com/tivix/django-common',
