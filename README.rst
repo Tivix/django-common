@@ -1,24 +1,25 @@
-=======================
+=====================
 django-common-helpers
-=======================
+=====================
+
 
 Overview
 ---------
 
 Django-common consists of the following things:
-	
+
 	- A middleware that makes sure your web-app runs either on or without 'www' in the domain.
-	
+
 	- A ``SessionManagerBase`` base class, that helps in keeping your session related  code object-oriented and clean! See session.py for usage details.
-	
+
 	- An ``EmailBackend`` for authenticating users based on their email, apart from username.
-	
+
 	- Some custom db fields that you can use in your models including a ``UniqueHashField`` and ``RandomHashField``.
-	
+
 	- Bunch of helpful functions in helper.py
-	
+
 	- A ``render_form_field`` template tag that makes rendering form fields easy and DRY.
-	
+
 	- A couple of dry response classes: ``JsonResponse`` and ``XMLResponse`` in the django_common.http that can be used in views that give json/xml responses.
 
 
@@ -28,35 +29,35 @@ Installation
 - Install django_common (ideally in your virtualenv!) using pip or simply getting a copy of the code and putting it in a directory in your codebase.
 
 - Add ``django_common`` to your Django settings ``INSTALLED_APPS``::
-	
+
 	INSTALLED_APPS = [
         # ...
         "django_common",
     ]
 
 - Add the following to your settings.py with appropriate values:
-	
+
 	- IS_DEV
 	- IS_PROD
 	- DOMAIN_NAME
 	- WWW_ROOT
 
 - Add ``common_settings`` to your Django settings ``TEMPLATE_CONTEXT_PROCESSORS``::
-	
+
 	TEMPLATE_CONTEXT_PROCESSORS = [
 		# ...
 		'django_common.context_processors.common_settings',
 	]
 
 - Add ``EmailBackend`` to the Django settings ``AUTHENTICATION_BACKENDS``::
-	
+
 	AUTHENTICATION_BACKENDS = (
 		'django_common.auth_backends.EmailBackend',
 		'django.contrib.auth.backends.ModelBackend'
 	)
 
 - Add ``WWWRedirectMiddleware`` if required to the list of middlewares::
-	
+
 	MIDDLEWARE_CLASSES = [
 		# ...
 		"WWWRedirectMiddleware",
@@ -74,7 +75,7 @@ Default is set to main app directory. However if you use django_base_project you
 2. Run
 
 To run scaffold type::
-    
+
     python manage.py scaffold APPNAME --model MODELNAME [fields]
 
 APPNAME is app name. If app does not exists it will be created.
@@ -85,7 +86,7 @@ MODELNAME is model name. Just enter model name that you want to create (for exam
 3. Field types
 
 Available fields::
-    
+
     char - CharField
     text - TextField
     int - IntegerFIeld
@@ -106,7 +107,7 @@ Two fields ``foreign`` and ``decimal`` requires additional parameters:
 NOTICE: All foreign key models must alread exist in project. User and Group model are imported automatically.
 
 - decimal field requires two more arguments ``max_digits`` and ``decimal_places``, example::
-    
+
     decimal:total_cost:10:2
 
 NOTICE: To all models scaffold automatically adds two fields: update_date and create_date.
