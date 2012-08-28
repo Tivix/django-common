@@ -1,2 +1,6 @@
 recursive-include django_common/templates *
 recursive-include django_common/static *
+include AUTHORS
+include LICENSE
+include MANIFEST.in
+include README.rst

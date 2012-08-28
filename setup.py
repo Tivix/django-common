@@ -14,7 +14,7 @@ from django_common import settings
 import os
 
 here = os.path.dirname(os.path.abspath(__file__))
-f = open(os.path.join(here,  'README.rst'))
+f = open(os.path.join(here, 'README.rst'))
 long_description = f.read().strip()
 f.close()
 
