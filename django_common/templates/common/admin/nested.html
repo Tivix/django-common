@@ -1,0 +1,49 @@
+  {{ nested.formset.management_form }} 
+  <table> 
+    <fieldset>
+       <h2 class="nested">{{ nested.opts.verbose_name_plural|capfirst }}</h2>
+    <thead> 
+      <tr class="nested"> 
+        {% for field in nested.fields %} 
+          <th {% if forloop.first %}colspan="2"{% endif %}>{{ field.label|capfirst }}</th> 
+        {% endfor %} 
+        {% if nested.formset.can_delete %} 
+          <th>Delete?</th> 
+        {% endif %} 
+      </tr> 
+    </thead> 
+     
+    <tbody> 
+      {% for formset in nested %} 
+      {% if formset.form.non_field_errors %} 
+      <tr class="nested"><td colspan="{{ formset.field_count }}"> 
+        {{ form.form.non_field_errors }} 
+      </td></tr> 
+      {% endif %} 
+        <tr class="{% if formset.original %}has_original{% endif %} nested"> 
+          <td class="original"> 
+            {% if formset.original %}<p style="position:relative;"> 
+              {{ formset.original }} 
+            </p>{% endif %} 
+            {% if formset.has_auto_field %} 
+              {{ formset.pk_field.field }} 
+            {% endif %}{{ formset.fk_field.field }} 
+          </td> 
+          {% for fieldset in formset %} 
+              {% for line in fieldset %} 
+                {% for field in line %} 
+                  <td class="{{ field.field.name }}"> 
+                    {{ field.field.errors.as_ul}} 
+                    {{ field.field }} 
+                  </td> 
+                {% endfor %} 
+              {% endfor %}  
+          {% endfor %} 
+          {% if formset.original and nested.formset.can_delete %} 
+            <td class="delete">{{ formset.deletion_field.field }}</td> 
+          {% endif %} 
+        </tr> 
+      {% endfor %} 
+    </tbody>
+    </fieldset>
+  </table>
