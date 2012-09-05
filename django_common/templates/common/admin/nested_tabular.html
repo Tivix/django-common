@@ -20,6 +20,11 @@
   tr.nested {
     background: none repeat scroll 0 0 #FFE;
   }
+
+  tr.nested-empty {
+    display: none;
+  }
+
 </style>
 {% endblock %}
 
@@ -147,22 +152,19 @@
     });
     if ($(this).length && showAddButton) {
       var addButton;
+      var addNestedButton;
       if (($(this).attr("tagName") == "TR")) {
         // If forms are laid out as table rows, insert the
         // "add" button in a new table row:
-        if(options.nested){
-          //$(this).parent().parent().parent().filter('td').append('<a href="javascript:void(0)">' + options.addText + "</a>");
-          //addButton = $(this).parent().parent().parent().find("a");
-        } else {
           var numCols = this.eq(0).children().length;
           $(this).parent().append('<tr class="' + options.addCssClass + '"><td colspan="' + numCols + '"><a href="javascript:void(0)">' + options.addText + "</a></tr>");
           addButton = $(this).parent().find("tr:last a");
-        }
       } else {
         // Otherwise, insert it immediately after the last form:
         $(this).filter(":last").after('<div class="' + options.addCssClass + '"><a href="javascript:void(0)">' + options.addText + "</a></div>");
         addButton = $(this).filter(":last").next().find("a");
       }
+
       addButton.click(function() {
         var totalForms = $("#id_" + options.prefix + "-TOTAL_FORMS");
         var template = $("#" + options.prefix + "-empty");
@@ -232,6 +234,141 @@
     }
     return this;
   }
+
+  $.fn.formset_nested = function(opts) {
+    var options = $.extend({}, $.fn.formset_nested.defaults, opts);
+    var updateElementIndex = function(el, prefix, ndx) {
+      if ($(el).attr("for")) {
+        $(el).attr("for", $(el).attr("for").replace('__prefix__', ndx));
+      }
+      if (el.id) {
+        el.id = el.id.replace('__prefix__', ndx);
+      }
+      if (el.name) {
+        el.name = el.name.replace('__prefix__', ndx);
+      }
+    };
+    var reorderElementIndex = function(el, base, ndx) {
+
+      if ($(el).attr("for")) {
+        var string = $(el).attr("for");
+      }
+      if (el.id) {
+        var string = el.id;
+      }
+      if (el.name) {
+        var string = el.name;
+      }
+
+      if(string){
+        var last = string.lastIndexOf('-');
+        var substring = string.substring(0, last);
+        var postfix = string.substring(last, string.length);
+        var prefix = substring.substring(0, substring.lastIndexOf('-')+1);
+        var new_string = prefix + ndx + postfix;
+      }
+
+      if ($(el).attr("for")) {
+        $(el).attr("for", new_string);
+      }
+      if (el.id) {
+        el.id = new_string;
+      }
+      if (el.name) {
+        el.name = new_string;
+      }
+      
+    };
+    var totalForms = $("#id_" + options.prefix + "-TOTAL_FORMS").attr("autocomplete", "off");
+    var nextIndex = parseInt(totalForms.val());
+    var maxForms = $("#id_" + options.prefix + "-MAX_NUM_FORMS").attr("autocomplete", "off");
+    // only show the add button if we are allowed to add more items,
+        // note that max_num = None translates to a blank string.
+    var showAddButton = maxForms.val() == '' || (maxForms.val()-totalForms.val()) > 0;
+    $(this).each(function(i) {
+      $(this).not("." + options.emptyCssClass).addClass(options.formCssClass);
+    });
+    if ($(this).length && showAddButton) {
+      var addButton;
+      var addNestedButton;
+      if (($(this).attr("tagName") == "TR")) {
+        // If forms are laid out as table rows, insert the
+        // "add" button in a new table row:
+          $(this).parent().parent().parent().filter('td').append('<a href="javascript:void(0)">' + options.addText + "</a>");
+          addNestedButton = $(this).parent().parent().parent().find("a");
+      } else {
+        // Otherwise, insert it immediately after the last form:
+        //$(this).filter(":last").after('<div class="' + options.addCssClass + '"><a href="javascript:void(0)">' + options.addText + "</a></div>");
+        //addButton = $(this).filter(":last").next().find("a");
+      }
+
+      addNestedButton.click(function() {
+        // id_scenariocondition_set-TOTAL_FORMS
+        // id_scenariocondition_set-0-scenarioconditionscore_set-TOTAL_FORMS
+        totalForms = $(this).parent().find('input[name*="TOTAL_FORMS"]');
+        nextIndex = parseInt(totalForms.val());//$("#id_" + options.prefix + "-TOTAL_FORMS");
+        var template = $(this).prev().find("tr.nested-empty");
+        var row = template.clone(true);
+        row.removeClass(options.emptyCssClass)
+            .addClass(options.formCssClass);
+        if (row.is("tr")) {
+          // If the forms are laid out in table rows, insert
+          // the remove button into the last table cell:
+          row.append('<td><div><a class="' + options.deleteCssClass +'" href="javascript:void(0)">' + options.deleteText + "</a></div></td>");
+        }
+
+        row.find("*").each(function() {
+          updateElementIndex(this, options.prefix, nextIndex);
+        });
+
+        // Insert the new form when it has been fully edited
+        row.insertBefore($(template));
+        // Update number of total forms
+        $(totalForms).val(parseInt(totalForms.val()) + 1);
+        nextIndex += 1;
+        // Hide add button in case we've hit the max, except we want to add infinitely
+        if ((maxForms.val() != '') && (maxForms.val()-totalForms.val()) <= 0) {
+          addButton.parent().hide();
+        }
+
+        // The delete button of each row triggers a bunch of other things
+        row.find("a." + options.deleteCssClass).click(function() {
+          // Remove the parent form containing this button:
+          var row = $(this).parent().parent().parent();
+          totalForms = $(row).parent().parent().parent().find('input[name*="TOTAL_FORMS"]');
+          nextIndex = parseInt(totalForms.val()-1);//$("#id_" + options.prefix + "-TOTAL_FORMS");
+          row.remove();
+          
+          // Update the TOTAL_FORMS form count.
+          $(totalForms).val(nextIndex);
+
+          // Show add button again once we drop below max
+          if ((maxForms.val() == '') || (maxForms.val()-forms.length) > 0) {
+            addNestedButton.parent().show();
+          }
+          
+          // Also, update names and ids for all remaining form controls
+          // so they remain in sequence:
+          $.each($(totalForms).parent().find('tbody tr').not('.nested-empty'), function(index, value) { 
+            $(value).find("*").each(function() {
+              reorderElementIndex(this, options.prefix, index);
+            });
+          });
+          //for (var i=0; i<nextIndex; i++)
+          //{
+          //  updateElementIndex($(forms).get(i), options.prefix, i);
+          //}
+          return false;
+        });
+        // If a post-add callback was supplied, call it with the added form:
+        if (options.added) {
+          options.added(row);
+        }
+        return false;
+      });
+    }
+    return this;
+  }
   /* Setup plugin defaults */
   $.fn.formset.defaults = {
     prefix: "form",         // The form prefix for your django formset
@@ -245,6 +382,21 @@
     removed: null,
     nested: false         // Function called each time a form is deleted
   }
+
+  /* Setup nested plugin defaults */
+  $.fn.formset_nested.defaults = {
+    prefix: "form",         // The form prefix for your django formset
+    addText: "add another",     // Text for the add link
+    deleteText: "remove",     // Text for the delete link
+    addCssClass: "add-row",     // CSS class applied to the add link
+    deleteCssClass: "delete-row", // CSS class applied to the delete link
+    emptyCssClass: "empty-row",   // CSS class applied to the empty row
+    formCssClass: "dynamic-form", // CSS class applied to each form in a formset
+    added: null,          // Function called each time a new form is added
+    removed: null,
+    nested: true         // Function called each time a form is deleted
+  }
+
 })(django.jQuery);
 
 
@@ -308,20 +460,19 @@
                 updateSelectFilter();
             })
         });
-        $(rows_nested).formset({
+        $(rows_nested).formset_nested({
             prefix: "{{ inline_admin_formset.formset.prefix }}",
             addText: "Add nested entry",
             formCssClass: "dynamic-{{ inline_admin_formset.formset.prefix }}",
             deleteCssClass: "inline-deletelink",
             deleteText: "{% trans "Remove" %}",
-            emptyCssClass: "empty-form",
+            emptyCssClass: "nested-empty",
             removed: alternatingRows,
             added: (function(row) {
                 initPrepopulatedFields(row);
                 reinitDateTimeShortCuts();
                 updateSelectFilter();
-            }),
-            nested: true
+            })
         });
     });
 })(django.jQuery);
