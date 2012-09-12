@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from django.conf import settings
 
 class SessionManagerBase(object):
     """
@@ -24,3 +26,59 @@ class SessionManagerBase(object):
             
             if self._session.has_key(key):
                 del self._session[key]
+
+
+class SessionManager(SessionManagerBase):
+    """Manages storing the cart"""
+
+    USER_ONLINE_TIMEOUT = 180  # 3 min
+
+    USERTIME = 'usertime'
+    _GENERIC_VAR_KEY_PREFIX = 'lpvar_'   # handles generic stuff being stored in the session
+
+    _SESSION_KEYS = [
+        USERTIME,
+    ]
+
+    def __init__(self, request):
+        super(SessionManager, self).__init__(request, prepend_key_with=request.get_host())
+        if not self._get_or_set(self.USERTIME, None):
+            self._get_or_set(self.USERTIME, None)
+
+    def get_usertime(self):
+        usertime = self._get_or_set(self.USERTIME, None)
+        try:
+            return usertime['last'] - usertime['start']
+        except:
+            return 0
+
+    def ping_usertime(self):
+        # Override default user online timeout
+        try:
+            timeout = int(settings.USER_ONLINE_TIMEOUT)
+        except:
+            timeout = self.USER_ONLINE_TIMEOUT
+        if not self._get_or_set(self.USERTIME, None):
+            self._get_or_set(self.USERTIME, {'start': datetime.now(), 'last': datetime.now()})
+        else:
+            usertime = self._get_or_set(self.USERTIME, None)
+            if usertime['last'] + timedelta(seconds=timeout) < datetime.now():
+                # This mean user reached timeout - we start from begining
+                self._get_or_set(self.USERTIME, {'start': datetime.now(), 'last': datetime.now()})
+            else:
+                # We just update last time
+                usertime['last'] = datetime.now()
+        return self._get_or_set(self.USERTIME, None)
+
+    def clear_usertime(self):
+        return self._get_or_set(self.USERTIME, {})
+
+    def generic_var(self, key, value=None):
+        """Stores generic variables in the session prepending it with
+        _GENERIC_VAR_KEY_PREFIX."""
+        return self._get_or_set('%s%s' % (self._GENERIC_VAR_KEY_PREFIX, key), value)
+
+    # simple setters, don't return anything
+    def set_strict_compliance(self, strict_compliance):
+        """Sets the compliance boolean."""
+        self._get_or_set(self.STRICT_COMPLIANCE_KEY, strict_compliance)
