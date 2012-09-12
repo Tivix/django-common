@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
-
+from django_common.session import SessionManager
 
 WWW = 'www'
 
@@ -13,6 +13,16 @@ class WWWRedirectMiddleware(object):
             return HttpResponsePermanentRedirect('http%s://%s%s' % ('s' if request.is_secure() else '',\
                 settings.DOMAIN_NAME, request.get_full_path()))
             return None
+
+class UserTimeTrackingMiddleware(object):
+    """
+    Tracking time user have been on site
+    """
+    def process_request(self, request):
+        if request.user and request.user.is_authenticated():
+            SessionManager(request).ping_usertime()
+        else:
+            SessionManager(request).clear_usertime()
 
 class SSLRedirectMiddleware(object):
     """Redirects all the requests that are non SSL to a SSL url"""
