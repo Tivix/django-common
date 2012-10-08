@@ -189,7 +189,7 @@
           updateElementIndex(this, options.prefix, totalForms.val());
         });
         // Insert the new form when it has been fully edited
-        row.insertBefore($(template));
+        row.insertBefore($(this).parent().parent());
         // Update number of total forms
         $(totalForms).val(parseInt(totalForms.val()) + 1);
         nextIndex += 1;
@@ -197,6 +197,7 @@
         if ((maxForms.val() != '') && (maxForms.val()-totalForms.val()) <= 0) {
           addButton.parent().hide();
         }
+
         // The delete button of each row triggers a bunch of other things
         row.find("a." + options.deleteCssClass).click(function() {
           // Remove the parent form containing this button:
@@ -225,6 +226,32 @@
           }
           return false;
         });
+
+        // START OF ADDING NESTED
+
+        var empty = $('.nested')[0];
+        var new_items = $(empty).clone().insertBefore($(this).parent().parent());
+
+        var updateNestedElementParentIndex = function(el, prefix, ndx) {
+          if ($(el).attr("for")) {
+            $(el).attr("for", $(el).attr("for").replace(prefix + '-0', prefix + '-' + ndx));
+          }
+          if (el.id) {
+            el.id = el.id.replace(prefix + '-0', prefix + '-' + ndx)
+          }
+          if (el.name) {
+            el.name = el.name.replace(prefix + '-0', prefix + '-' + ndx)
+          }
+        };
+        
+        new_items.find("*").each(function() {
+          updateNestedElementParentIndex(this, "{{ inline_admin_formset.formset.prefix }}", nextIndex-1);
+        });
+
+        
+
+        // END OF ADDING NESTED
+
         // If a post-add callback was supplied, call it with the added form:
         if (options.added) {
           options.added(row);
