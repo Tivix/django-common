@@ -33,3 +33,19 @@ def disable_for_loaddata(signal_handler):
                 return
         signal_handler(*args, **kwargs)
     return wrapper
+
+def anonymous_required(view, redirect_to=None):
+    """
+    Only allow if user is NOT authenticated.
+    """
+
+    if redirect_to is None:
+        redirect_to = settings.LOGIN_REDIRECT_URL
+
+    @wraps(view)
+    def wrapper(request, *a, **k):
+        if request.user and request.user.is_authenticated():
+            return HttpResponseRedirect(redirect_to)
+        return view(request, *a, **k)
+    return wrapper
+
