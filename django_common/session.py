@@ -77,8 +77,3 @@ class SessionManager(SessionManagerBase):
         """Stores generic variables in the session prepending it with
         _GENERIC_VAR_KEY_PREFIX."""
         return self._get_or_set('%s%s' % (self._GENERIC_VAR_KEY_PREFIX, key), value)
-
-    # simple setters, don't return anything
-    def set_strict_compliance(self, strict_compliance):
-        """Sets the compliance boolean."""
-        self._get_or_set(self.STRICT_COMPLIANCE_KEY, strict_compliance)
