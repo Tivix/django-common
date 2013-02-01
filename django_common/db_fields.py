@@ -201,6 +201,12 @@ class EncryptedTextField(BaseEncryptedField):
         defaults.update(kwargs)
         return super(EncryptedTextField, self).formfield(**defaults)
 
+add_introspection_rules([
+    (
+        [EncryptedTextField], [], {},
+    ),
+], ["^django_common\.db_fields\.EncryptedTextField"])
+
 
 class EncryptedCharField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
@@ -212,3 +218,9 @@ class EncryptedCharField(BaseEncryptedField):
         defaults = {'max_length': self.max_length}
         defaults.update(kwargs)
         return super(EncryptedCharField, self).formfield(**defaults)
+
+add_introspection_rules([
+    (
+        [EncryptedCharField], [], {},
+    ),
+], ["^django_common\.db_fields\.EncryptedCharField"])
