@@ -81,7 +81,7 @@ def start_thread(target, *args):
 def send_mail(subject, message, from_email, recipient_emails, files = None, html=False, reply_to=None, bcc=None, cc=None):
   import django.core.mail
   try:
-    logging.debug('Sending mail to: %s' % recipient_emails)
+    logging.debug('Sending mail to: %s' % ', '.join(r for r in recipient_emails))
     logging.debug('Message: %s' % message)
     email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails, bcc, cc=cc)
     if html:
