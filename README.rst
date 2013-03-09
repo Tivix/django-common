@@ -182,3 +182,22 @@ At the end you can test new app by runing test::
 Happy scaffolding!
 
 This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
+
+
+Changelog
+=========
+
+0.4
+---
+
+    - Added nested inline templates, js and full ajax support. Now we can add/remove nested fields dynamically.
+
+    - JsonpResponse object for padded JSON
+
+    - User time tracking feature - how long the user has been on site, associated middleware etc.
+
+    - @anonymous_required decorator: for views that should not be accessed by a logged-in user.
+
+    - Added EncryptedTextField and EncryptedCharField
+
+    - Misc. bug fixes
