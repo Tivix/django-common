@@ -187,8 +187,15 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
-0.5
+
+0.5.1
 -----
+
+    - root_path deprecated in Django 1.4+
+
+
+0.5
+---
 
     - Added self.get_inline_instances() usages instead of self.inline_instances
 
