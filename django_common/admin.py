@@ -40,7 +40,7 @@ class NestedModelAdmin(ModelAdmin):
                 form_validated = False
                 new_object = self.model()
             prefixes = {}
-            for FormSet, inline in zip(self.get_formsets(request), self.inline_instances):
+            for FormSet, inline in zip(self.get_formsets(request), self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -50,7 +50,7 @@ class NestedModelAdmin(ModelAdmin):
                                   save_as_new="_saveasnew" in request.POST,
                                   prefix=prefix, queryset=inline.queryset(request))
                 formsets.append(formset)
-                for inline in self.inline_instances:
+                for inline in self.get_inline_instances(request):
                     # If this is the inline that matches this formset, and
                     # we have some nested inlines to deal with, then we need
                     # to get the relevant formset for each of the forms in
@@ -83,7 +83,7 @@ class NestedModelAdmin(ModelAdmin):
             form = ModelForm(initial=initial)
             prefixes = {}
             for FormSet, inline in zip(self.get_formsets(request),
-                                       self.inline_instances):
+                                       self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -98,7 +98,7 @@ class NestedModelAdmin(ModelAdmin):
         media = self.media + adminForm.media
 
         inline_admin_formsets = []
-        for inline, formset in zip(self.inline_instances, formsets):
+        for inline, formset in zip(self.get_inline_instances(request), formsets):
             fieldsets = list(inline.get_fieldsets(request))
             readonly = list(inline.get_readonly_fields(request))
             inline_admin_formset = helpers.InlineAdminFormSet(inline, formset,
@@ -157,7 +157,7 @@ class NestedModelAdmin(ModelAdmin):
                 new_object = obj
             prefixes = {}
             for FormSet, inline in zip(self.get_formsets(request, new_object),
-                                       self.inline_instances):
+                                       self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -167,7 +167,7 @@ class NestedModelAdmin(ModelAdmin):
                                   queryset=inline.queryset(request))
 
                 formsets.append(formset)
-                for inline in self.inline_instances:
+                for inline in self.get_inline_instances(request):
                     # If this is the inline that matches this formset, and
                     # we have some nested inlines to deal with, then we need
                     # to get the relevant formset for each of the forms in
@@ -191,7 +191,7 @@ class NestedModelAdmin(ModelAdmin):
         else:
             form = ModelForm(instance=obj)
             prefixes = {}
-            for FormSet, inline in zip(self.get_formsets(request, obj), self.inline_instances):
+            for FormSet, inline in zip(self.get_formsets(request, obj), self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
@@ -206,7 +206,7 @@ class NestedModelAdmin(ModelAdmin):
         media = self.media + adminForm.media
 
         inline_admin_formsets = []
-        for inline, formset in zip(self.inline_instances, formsets):
+        for inline, formset in zip(self.get_inline_instances(request), formsets):
             fieldsets = list(inline.get_fieldsets(request, obj))
             readonly = list(inline.get_readonly_fields(request, obj))
             inline_admin_formset = helpers.InlineAdminFormSet(inline, formset,
@@ -239,7 +239,7 @@ class NestedModelAdmin(ModelAdmin):
 
     def get_inlines(self, request, obj=None, prefix=None):
         nested_inlines = []
-        for inline in self.inline_instances:
+        for inline in self.get_inline_instances(request):
             FormSet = inline.get_formset(request, obj)
             prefix = "%s-%s" % (prefix, FormSet.get_default_prefix())
             formset = FormSet(instance=obj, prefix=prefix)
@@ -340,4 +340,3 @@ class NestedTabularInline(BaseModelAdmin):
             nested_inline = helpers.InlineAdminFormSet(inline, formset, fieldsets)
             nested_inlines.append(nested_inline)
         return nested_inlines
-

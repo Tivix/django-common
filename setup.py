@@ -30,7 +30,7 @@ setup(
     keywords = 'django',
     zip_safe=False,
     install_requires=[
-        'Django>=1.2.3',
+        'Django>=1.4.0',
         'South>=0.7.2'
     ],
     test_suite = 'django_common.tests',

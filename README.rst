@@ -187,6 +187,14 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+0.5
+-----
+
+    - Added self.get_inline_instances() usages instead of self.inline_instances
+
+    - Changed minimum requirement to Django 1.4+ because of the above.
+
+
 0.4
 ---
 
