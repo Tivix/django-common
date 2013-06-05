@@ -3,6 +3,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.contrib.admin.util import unquote, flatten_fieldsets
 from django.contrib.admin.options import BaseModelAdmin, ModelAdmin
+from django.contrib.admin.helpers import AdminForm
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.utils.translation import ugettext as _
@@ -16,6 +17,45 @@ from django import forms
 from django.utils.functional import curry
 
 csrf_protect_m = method_decorator(csrf_protect)
+
+
+def __init__(self, form, fieldsets, prepopulated_fields, readonly_fields=None, model_admin=None):
+    """
+    Monkey-patch for django 1.5
+    """
+    def normalize_fieldsets(fieldsets):
+        """
+        Make sure the keys in fieldset dictionaries are strings. Returns the
+        normalized data.
+        """
+        result = []
+        for name, options in fieldsets:
+            result.append((name, normalize_dictionary(options)))
+        return result
+
+    def normalize_dictionary(data_dict):
+        """
+        Converts all the keys in "data_dict" to strings. The keys must be
+        convertible using str().
+        """
+        for key, value in data_dict.items():
+            if not isinstance(key, str):
+                del data_dict[key]
+                data_dict[str(key)] = value
+        return data_dict
+    if isinstance(prepopulated_fields, list):
+        prepopulated_fields = dict()
+    self.form, self.fieldsets = form, normalize_fieldsets(fieldsets)
+    self.prepopulated_fields = [{
+        'field': form[field_name],
+        'dependencies': [form[f] for f in dependencies]
+    } for field_name, dependencies in prepopulated_fields.items()]
+    self.model_admin = model_admin
+    if readonly_fields is None:
+        readonly_fields = ()
+    self.readonly_fields = readonly_fields
+
+AdminForm.__init__ = __init__
 
 
 class NestedModelAdmin(ModelAdmin):

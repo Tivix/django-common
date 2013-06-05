@@ -22,13 +22,16 @@ class FormFieldNode(template.Node):
             return ''
 
         widget = form_field.field.widget
-        if isinstance(widget, widgets.CheckboxSelectMultiple)\
-            or isinstance(widget, widgets.CheckboxInput):
-            t = get_template('common/fragments/checkbox_field.html')
-        elif isinstance(widget, widgets.RadioSelect):
+        if isinstance(widget, widgets.RadioSelect):
             t = get_template('common/fragments/radio_field.html')
         else:
-            t = get_template('common/fragments/form_field.html')
+            if isinstance(widget, widgets.CheckboxInput):
+                t = get_template('common/fragments/checkbox_field.html')
+            else:
+                if isinstance(widget, widgets.CheckboxSelectMultiple):
+                    t = get_template('common/fragments/multi_checkbox_field.html')
+                else:
+                    t = get_template('common/fragments/form_field.html')
 
         if self.help_text is None:
             self.help_text = form_field.help_text
