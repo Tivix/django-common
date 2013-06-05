@@ -187,6 +187,16 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+0.6
+---
+    - Added support for Django 1.5
+
+    - Added fixes in nested inlines
+
+    - Added support for a multi-select checkbox field template in render_form_field
+
+    - Rewrote fragments to be Bootstrap-compatible
+
 
 0.5.1
 -----
