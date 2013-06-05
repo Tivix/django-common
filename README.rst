@@ -193,7 +193,11 @@ Changelog
 
     - Added fixes in nested inlines
 
-    - Added support for a multi-select checkbox field template in render_form_field
+    - Added support for a multi-select checkbox field template and radio button in render_form_field
+
+    - Added Test Email Backend for overwrite TO, CC and BCC fields in all outgoing emails
+
+    - Added Custom File Email Backend to save emails as file with custom extension
 
     - Rewrote fragments to be Bootstrap-compatible
 
