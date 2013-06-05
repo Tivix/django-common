@@ -1,0 +1,14 @@
+<div id="id_{{ form_field.html_name }}_container" class="control-group formRow clearfix {% if css_classes %}{{ css_classes }}{% endif %} {% if form_field.errors %}error{% endif %}">
+    <div class="input">
+        <label>
+            {{ form_field.label }}
+            {% if help_text %}
+                <span class="help-inline">{{ help_text }}</span>
+            {% endif %}
+            {% if form_field.errors %}
+                <span class="help-inline">{{ form_field.errors }}</span>
+            {% endif %}
+        </label>
+        {{ form_field }}
+    </div>
+</div>
