@@ -14,7 +14,7 @@ class TestEmailBackend(EmailBackend):
 
         Sample values from setting.py:
         EMAIL_BACKEND = 'django_common.email_backends.TestEmailBackend'
-        TEST_EMIAL_TO = ['dev@tivix.com']  # default are addresses form ADMINS
+        TEST_EMAIL_TO = ['dev@tivix.com']  # default are addresses form ADMINS
         TEST_EMAIL_CC = ['dev-cc@tivix.com']  # default is empty list
         TEST_EMAIL_BCC = ['dev-bcc@tivix.com']  # default is empty list
     """
@@ -27,8 +27,8 @@ class TestEmailBackend(EmailBackend):
         if hasattr(message, 'sanitize_address'):
             from_email = message.sanitize_address(email_message.from_email,
                                                   email_message.encoding)
-        if hasattr(settings, 'TEST_EMIAL_TO'):
-            email_message.to = settings.TEST_EMIAL_TO
+        if hasattr(settings, 'TEST_EMAIL_TO'):
+            email_message.to = settings.TEST_EMAIL_TO
         else:
             email_message.to = dict(getattr(settings, 'ADMINS', ())).values()
         email_message.cc = getattr(settings, 'TEST_EMAIL_CC', [])
