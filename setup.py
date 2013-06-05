@@ -31,7 +31,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'Django>=1.4.0',
-        'South>=0.7.6'
+        'South>=0.7.2'
     ],
     test_suite = 'django_common.tests',
     include_package_data=True,
