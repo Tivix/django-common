@@ -46,7 +46,7 @@ def form_errors_serialize(form):
           errors['%s-%s' % (form.prefix, field)] = force_unicode(form.errors[field])
       else:
           errors[field] = force_unicode(form.errors[field])
-  
+
   if form.non_field_errors():
     errors['non_field_errors'] = force_unicode(form.non_field_errors())
   return {'errors': errors}
@@ -78,42 +78,52 @@ def start_thread(target, *args):
    t.setDaemon(True)
    t.start()
 
-def send_mail(subject, message, from_email, recipient_emails, files = None, html=False, reply_to=None, bcc=None, cc=None):
-  import django.core.mail
-  try:
-    logging.debug('Sending mail to: %s' % ', '.join(r for r in recipient_emails))
-    logging.debug('Message: %s' % message)
-    email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails, bcc, cc=cc)
-    if html:
-        email.content_subtype = "html"
-    if files:
-        for file in files:
-            email.attach_file(file)
-    if reply_to:
-        email.extra_headers = {'Reply-To': reply_to}
-    email.send()
-        
-  except Exception, e:
-    # TODO:  Raise error again so that more information is included in the logs?
-    logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e))
+def send_mail(subject, message, from_email, recipient_emails, files=None,
+        html=False, reply_to=None, bcc=None, cc=None, files_manually=None):
+    """Sends email with advanced optional parameters
 
-def send_mail_in_thread(subject, message, from_email, recipient_emails, files = None, html=False, reply_to=None, bcc=None, cc=None):
-    start_thread(send_mail, subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc)
+    To attach non-file content (e.g. content not saved on disk), use
+    files_manually parameter and provide list of 3 element tuples, e.g.
+    [('design.png', img_data, 'image/png'),] which will be passed to
+    email.attach().
+    """
+    import django.core.mail
+    try:
+        logging.debug('Sending mail to: %s' % ', '.join(r for r in recipient_emails))
+        logging.debug('Message: %s' % message)
+        email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails, bcc, cc=cc)
+        if html:
+            email.content_subtype = "html"
+        if files:
+            for file in files:
+                email.attach_file(file)
+        if files_manually:
+            for filename, content, mimetype in files_manually:
+                email.attach(filename, content, mimetype)
+        if reply_to:
+            email.extra_headers = {'Reply-To': reply_to}
+        email.send()
+    except Exception, e:
+        # TODO:  Raise error again so that more information is included in the logs?
+        logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e))
 
-def send_mail_using_template(subject, template_name, from_email, recipient_emails, context_map, in_thread=False, files = None, html=False, reply_to=None, bcc=None, cc=None):
+def send_mail_in_thread(subject, message, from_email, recipient_emails, files=None, html=False, reply_to=None, bcc=None, cc=None, files_manually=None):
+    start_thread(send_mail, subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc, files_manually)
+
+def send_mail_using_template(subject, template_name, from_email, recipient_emails, context_map, in_thread=False, files=None, html=False, reply_to=None, bcc=None, cc=None, files_manually=None):
     t = get_template(template_name)
     message = t.render(Context(context_map))
     if in_thread:
-        return send_mail_in_thread(subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc)
+        return send_mail_in_thread(subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc, files_manually)
     else:
-        return send_mail(subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc)
+        return send_mail(subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc, files_manually)
 
 def utc_to_pacific(timestamp):
     return timestamp.replace(tzinfo=utc).astimezone(Pacific)
 
 def pacific_to_utc(timestamp):
     return timestamp.replace(tzinfo=Pacific).astimezone(utc)
-    
+
 
 def humanize_time_since(timestamp = None):
     """Returns a fuzzy time since. Will only return the largest time. EX: 20 days, 14 min"""
@@ -138,7 +148,7 @@ def humanize_time_since(timestamp = None):
         return str
     elif minutes > 0:
         if minutes == 1:tStr = "min"
-        else:           tStr = "mins"           
+        else:           tStr = "mins"
         str = str + "%s %s" %(minutes, tStr)
         return str
     elif seconds > 0:
@@ -152,5 +162,5 @@ def humanize_time_since(timestamp = None):
 def chunks(l, n):
     """ split successive n-sized chunks from a list."""
     for i in xrange(0, len(l), n):
-        yield l[i:i+n]        
+        yield l[i:i+n]
 
