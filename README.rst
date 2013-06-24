@@ -187,6 +187,20 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+0.6
+---
+    - Added support for Django 1.5
+
+    - Added fixes in nested inlines
+
+    - Added support for a multi-select checkbox field template and radio button in render_form_field
+
+    - Added Test Email Backend for overwrite TO, CC and BCC fields in all outgoing emails
+
+    - Added Custom File Email Backend to save emails as file with custom extension
+
+    - Rewrote fragments to be Bootstrap-compatible
+
 
 0.5.1
 -----
