@@ -187,6 +187,11 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+next
+----
+    - send_mail*: added support for attaching content to emails manually (without providing path to file).
+
+
 0.6
 ---
     - Added support for Django 1.5
