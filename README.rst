@@ -63,6 +63,9 @@ Installation
 		"WWWRedirectMiddleware",
 	]
 
+- Scaffolds / ajax_form.js (ajax forms) etc. require jQuery
+
+
 Scaffolding feature
 -------------------
 
