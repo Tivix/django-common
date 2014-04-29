@@ -33,6 +33,19 @@ class FileTooLarge(AppException):
         self.file_size = file_size_kb
 
 
+def get_class(kls):
+    """
+    Converts a string to a class.
+    Courtesy: http://stackoverflow.com/questions/452969/does-python-have-an-equivalent-to-java-class-forname/452981#452981
+    """
+    parts = kls.split('.')
+    module = ".".join(parts[:-1])
+    m = __import__(module)
+    for comp in parts[1:]:
+        m = getattr(m, comp)
+    return m
+
+
 def is_among(value, *possibilities):
     """Ensure that the method that has been used for the request is one of the expected ones (e.g., GET or POST)."""
     for possibility in possibilities:
