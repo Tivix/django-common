@@ -192,7 +192,9 @@ Changelog
 
 next
 ----
-    - send_mail*: added support for attaching content to emails manually (without providing path to file).
+    - Added support for attaching content to emails manually (without providing path to file).
+
+    - Added LoginRequiredMixin
 
 
 0.6
