@@ -2,7 +2,10 @@ from StringIO import StringIO
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect, Http404
-from django.utils import simplejson
+try:
+    import json
+except ImportError:
+    from django.utils import simplejson as json
 
 
 class JsonResponse(HttpResponse):
@@ -30,7 +33,7 @@ def json_response(data={ }, errors=[ ], success=True):
     'errors': errors,
     'success': len(errors) == 0 and success,
   })
-  return simplejson.dumps(data)
+  return json.dumps(data)
 
 
 class XMLResponse(HttpResponse):

@@ -6,7 +6,12 @@ from django.db.models import fields
 from django.template.defaultfilters import slugify
 from django.db import models
 from django.core.serializers.json import DjangoJSONEncoder
-from django.utils import simplejson as json
+try:
+    import json
+except ImportError:
+    from django.utils import simplejson as json
+
+
 from django import forms
 from django.conf import settings
 
