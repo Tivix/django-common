@@ -1,7 +1,10 @@
 "Some common routines that can be used throughout the code."
 import hashlib, os, logging, datetime, threading
 
-from django.utils import simplejson
+try:
+    import json
+except ImportError:
+    from django.utils import simplejson as json
 from django.utils.encoding import force_unicode
 from django.template import Context
 from django.template.loader import get_template
@@ -73,7 +76,7 @@ def json_response(data={}, errors=[], success=True):
         'errors': errors,
         'success': len(errors) == 0 and success,
     })
-    return simplejson.dumps(data)
+    return json.dumps(data)
 
 
 def sha224_hash():
