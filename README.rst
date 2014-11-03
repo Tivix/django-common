@@ -190,6 +190,10 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+0.6.3
+-----
+    - Changed mimetype to content_type in class JsonReponse to reflect Django 1.7 deprecation.
+
 0.6.2
 -----
     - Django 1.7 compatability using simplejson as fallback
