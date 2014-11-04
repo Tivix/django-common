@@ -14,7 +14,7 @@ class JsonResponse(HttpResponse):
     data is a map, errors a list
     """
     json = json_response(data=data, errors=errors, success=success)
-    super(JsonResponse, self).__init__(json, mimetype='application/json')
+    super(JsonResponse, self).__init__(json, content_type='application/json')
 
 class JsonpResponse(HttpResponse):
   """
