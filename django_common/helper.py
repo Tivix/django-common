@@ -5,7 +5,7 @@ try:
     import json
 except ImportError:
     from django.utils import simplejson as json
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 from django.template import Context
 from django.template.loader import get_template
 from django.core import exceptions
@@ -54,7 +54,7 @@ def is_among(value, *possibilities):
     for possibility in possibilities:
         if value == possibility:
             return True
-    raise Exception, 'A different request value was encountered than expected: %s' % value
+    raise Exception('A different request value was encountered than expected: %s' % value)
 
 
 def form_errors_serialize(form):
@@ -62,12 +62,12 @@ def form_errors_serialize(form):
     for field in form.fields.keys():
         if form.errors.has_key(field):
             if form.prefix:
-                errors['%s-%s' % (form.prefix, field)] = force_unicode(form.errors[field])
+                errors['%s-%s' % (form.prefix, field)] = force_text(form.errors[field])
             else:
-                errors[field] = force_unicode(form.errors[field])
+                errors[field] = force_text(form.errors[field])
 
     if form.non_field_errors():
-        errors['non_field_errors'] = force_unicode(form.non_field_errors())
+        errors['non_field_errors'] = force_text(form.non_field_errors())
     return {'errors': errors}
 
 
@@ -128,7 +128,7 @@ def send_mail(subject, message, from_email, recipient_emails, files=None,
         if reply_to:
             email.extra_headers = {'Reply-To': reply_to}
         email.send()
-    except Exception, e:
+    except Exception as e:
         # TODO:  Raise error again so that more information is included in the logs?
         logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e))
 
