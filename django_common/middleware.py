@@ -1,8 +1,11 @@
+from __future__ import print_function, unicode_literals, with_statement, division
+
 from django.conf import settings
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django_common.session import SessionManager
 
 WWW = 'www'
+
 
 class WWWRedirectMiddleware(object):
     """
@@ -10,9 +13,11 @@ class WWWRedirectMiddleware(object):
     """
     def process_request(self, request):
         if settings.IS_PROD and request.get_host() != settings.DOMAIN_NAME:
-            return HttpResponsePermanentRedirect('http%s://%s%s' % ('s' if request.is_secure() else '',\
-                settings.DOMAIN_NAME, request.get_full_path()))
-            return None
+            proto_suffix = 's' if request.is_secure() else ''
+            url = 'http%s://%s%s' % (proto_suffix, settings.DOMAIN_NAME, request.get_full_path())
+            return HttpResponsePermanentRedirect(url)
+        return None
+
 
 class UserTimeTrackingMiddleware(object):
     """
@@ -24,30 +29,36 @@ class UserTimeTrackingMiddleware(object):
         else:
             SessionManager(request).clear_usertime()
 
+
 class SSLRedirectMiddleware(object):
-    """Redirects all the requests that are non SSL to a SSL url"""
+    """
+    Redirects all the requests that are non SSL to a SSL url
+    """
     def process_request(self, request):
         if not request.is_secure():
-            return HttpResponseRedirect('https://%s%s' % (settings.DOMAIN_NAME, request.get_full_path()))
+            url = 'https://%s%s' % (settings.DOMAIN_NAME, request.get_full_path())
+            return HttpResponseRedirect(url)
         return None
+
 
 class NoSSLRedirectMiddleware(object):
     """
-    Redirects if a non-SSL required view is hit. This middleware assumes a SSL protected view has been decorated
-    by the 'ssl_required' decorator (see decorators.py)
+    Redirects if a non-SSL required view is hit. This middleware assumes a SSL protected view
+    has been decorated by the 'ssl_required' decorator (see decorators.py)
 
     Redirects to https for admin though only for PROD
     """
-
     __DECORATOR_INNER_FUNC_NAME = '_checkssl'
 
     def __is_in_admin(self, request):
         return True if request.path.startswith('/admin/') else False
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        if view_func.func_name != self.__DECORATOR_INNER_FUNC_NAME and\
-            not (self.__is_in_admin(request) and settings.IS_PROD) and\
-            request.is_secure(): # request is secure, but view is not decorated
-            return HttpResponseRedirect('http://%s%s' % (settings.DOMAIN_NAME, request.get_full_path()))
+        if view_func.func_name != self.__DECORATOR_INNER_FUNC_NAME \
+                and not (self.__is_in_admin(request) and settings.IS_PROD) \
+                and request.is_secure():  # request is secure, but view is not decorated
+            url = 'http://%s%s' % (settings.DOMAIN_NAME, request.get_full_path())
+            return HttpResponseRedirect(url)
         elif self.__is_in_admin(request) and not request.is_secure() and settings.IS_PROD:
-            return HttpResponseRedirect('https://%s%s' % (settings.DOMAIN_NAME, request.get_full_path()))
+            url = 'https://%s%s' % (settings.DOMAIN_NAME, request.get_full_path())
+            return HttpResponseRedirect(url)

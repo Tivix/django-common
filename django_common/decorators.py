@@ -1,3 +1,5 @@
+from __future__ import print_function, unicode_literals, with_statement, division
+
 try:
     from functools import wraps
 except ImportError:
@@ -10,16 +12,23 @@ from django.http import HttpResponseRedirect
 
 
 def ssl_required(allow_non_ssl=False):
-    """Views decorated with this will always get redirected to https except when allow_non_ssl is set to true."""
+    """
+    Views decorated with this will always get redirected to https
+    except when allow_non_ssl is set to true.
+    """
     def wrapper(view_func):
         def _checkssl(request, *args, **kwargs):
-            # allow_non_ssl=True lets non-https requests to come through to this view (and hence not redirect)
-            if hasattr(settings, 'SSL_ENABLED') and settings.SSL_ENABLED and not request.is_secure() and not allow_non_ssl:
-                return HttpResponseRedirect(request.build_absolute_uri().replace('http://', 'https://'))
+            # allow_non_ssl=True lets non-https requests to come
+            # through to this view (and hence not redirect)
+            if hasattr(settings, 'SSL_ENABLED') and settings.SSL_ENABLED \
+                    and not request.is_secure() and not allow_non_ssl:
+                return HttpResponseRedirect(
+                    request.build_absolute_uri().replace('http://', 'https://'))
             return view_func(request, *args, **kwargs)
-        
+
         return _checkssl
     return wrapper
+
 
 def disable_for_loaddata(signal_handler):
     """
@@ -34,11 +43,11 @@ def disable_for_loaddata(signal_handler):
         signal_handler(*args, **kwargs)
     return wrapper
 
+
 def anonymous_required(view, redirect_to=None):
     """
     Only allow if user is NOT authenticated.
     """
-
     if redirect_to is None:
         redirect_to = settings.LOGIN_REDIRECT_URL
 
@@ -48,4 +57,3 @@ def anonymous_required(view, redirect_to=None):
             return HttpResponseRedirect(redirect_to)
         return view(request, *a, **k)
     return wrapper
-
