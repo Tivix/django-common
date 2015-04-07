@@ -1,3 +1,5 @@
+from __future__ import print_function, unicode_literals, with_statement, division
+
 from django import template
 from django.forms import widgets
 from django.template.loader import get_template
@@ -62,7 +64,8 @@ def render_form_field(parser, token):
         else:
             tag_name, form_field = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError, "Unable to parse arguments for %r" % token.contents.split()[0]
+        raise template.TemplateSyntaxError(
+            "Unable to parse arguments for %r" % token.contents.split()[0])
 
     return FormFieldNode(form_field, help_text=help_text, css_classes=css_classes)
 
@@ -70,7 +73,8 @@ def render_form_field(parser, token):
 @register.simple_tag
 def active(request, pattern):
     """
-    Returns the string 'active' if pattern matches. Used to assign a css class in navigation bars to active tab/section
+    Returns the string 'active' if pattern matches.
+    Used to assign a css class in navigation bars to active tab/section.
     """
     if request.path == pattern:
         return 'active'
@@ -80,8 +84,8 @@ def active(request, pattern):
 @register.simple_tag
 def active_starts(request, pattern):
     """
-    Returns the string 'active' if request url starts with pattern. Used to assign a css class in navigation bars to
-    active tab/section
+    Returns the string 'active' if request url starts with pattern.
+    Used to assign a css class in navigation bars to active tab/section.
     """
     if request.path.startswith(pattern):
         return 'active'

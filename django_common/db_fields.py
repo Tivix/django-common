@@ -1,3 +1,5 @@
+from __future__ import print_function, unicode_literals, with_statement, division
+
 import binascii
 import random
 import string
@@ -15,8 +17,7 @@ except ImportError:
 from django import forms
 from django.conf import settings
 
-
-from south.modelsinspector import add_introspection_rules
+from django_common.compat import string_types
 from django_common.helper import md5_hash
 
 
@@ -35,7 +36,7 @@ class JSONField(models.TextField):
             return None
 
         try:
-            if isinstance(value, basestring):
+            if isinstance(value, string_types):
                 return json.loads(value)
         except ValueError:
             pass
@@ -56,11 +57,12 @@ class JSONField(models.TextField):
 
 class UniqueSlugField(fields.SlugField):
     """
-    Represents a self-managing sluf field, that makes sure that the slug value is unique on the db table. Slugs by
-    default get a db_index on them. The "Unique" in the class name is a misnomer since it does support unique=False
+    Represents a self-managing sluf field, that makes sure that the slug value is unique on
+    the db table. Slugs by default get a db_index on them. The "Unique" in the class name is
+     a misnomer since it does support unique=False
 
-    @requires "prepopulate_from" in the constructor. This could be a field or a function in the model class which is using
-    this field
+    @requires "prepopulate_from" in the constructor. This could be a field or a function in the
+    model class which is using this field
 
     Defaults update_on_save to False
 
@@ -74,6 +76,11 @@ class UniqueSlugField(fields.SlugField):
         self.prepopulate_from = prepopulate_from
         super(UniqueSlugField, self).__init__(*args, **kwargs)
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(UniqueSlugField, self).deconstruct()
+        kwargs['prepopulate_from'] = self.prepopulate_from
+        return name, path, args, kwargs
+
     def pre_save(self, model_instance, add):
         prepopulate_field = getattr(model_instance, self.prepopulate_from)
         if callable(prepopulate_field):
@@ -81,12 +88,15 @@ class UniqueSlugField(fields.SlugField):
         else:
             prepopulate_value = prepopulate_field
 
-        # if object has an id, and not to update on save, then return existig model instance's slug value
+        # if object has an id, and not to update on save,
+        # then return existig model instance's slug value
         if getattr(model_instance, 'id') and not self.__update_on_save:
             return getattr(model_instance, self.name)
 
-        # if this is a previously saved object, and current instance's slug is same as one being proposed
-        if getattr(model_instance, 'id') and getattr(model_instance, self.name) == slugify(prepopulate_value):
+        # if this is a previously saved object, and current
+        # instance's slug is same as one being proposed
+        if getattr(model_instance, 'id') \
+                and getattr(model_instance, self.name) == slugify(prepopulate_value):
             return getattr(model_instance, self.name)
 
         # if a unique slug is not required (not the default of course)
@@ -111,28 +121,35 @@ class UniqueSlugField(fields.SlugField):
         setattr(model_instance, slug_field, slug)
         return slug
 
-add_introspection_rules([
-    (
-        [UniqueSlugField],  # Class(es) these apply to
-        [],         # Positional arguments (not used)
-        {           # Keyword argument
-            "prepopulate_from": ["prepopulate_from", {"default": 'id'}],
-        },
-    ),
-], ["^django_common\.db_fields\.UniqueSlugField"])
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([
+        (
+            [UniqueSlugField],  # Class(es) these apply to
+            [],         # Positional arguments (not used)
+            {           # Keyword argument
+                "prepopulate_from": ["prepopulate_from", {"default": 'id'}],
+            },
+        ),
+    ], ["^django_common\.db_fields\.UniqueSlugField"])
+except ImportError:
+    pass
 
 
 class RandomHashField(fields.CharField):
     """
     Store a random hash for a certain model field.
 
-    @param update_on_save optional field whether to update this hash or not, everytime the model instance is saved
+    @param update_on_save optional field whether to update this hash or not,
+    everytime the model instance is saved
     """
     def __init__(self, update_on_save=False, hash_length=None, *args, **kwargs):
-        #TODO: args & kwargs serve no purpose but to make django evolution to work
+        # TODO: args & kwargs serve no purpose but to make django evolution to work
         self.update_on_save = update_on_save
         self.hash_length = hash_length
-        super(fields.CharField, self).__init__(max_length=128, unique=True, blank=False, null=False, db_index=True, default=md5_hash(max_length=self.hash_length))
+        super(fields.CharField, self).__init__(
+            max_length=128, unique=True, blank=False, null=False, db_index=True,
+            default=md5_hash(max_length=self.hash_length))
 
     def pre_save(self, model_instance, add):
         if not add and not self.update_on_save:
@@ -142,22 +159,27 @@ class RandomHashField(fields.CharField):
         setattr(model_instance, self.name, random_hash)
         return random_hash
 
-add_introspection_rules([
-    (
-        [RandomHashField],  # Class(es) these apply to
-        [],         # Positional arguments (not used)
-        {           # Keyword argument
-            "update_on_save": ["update_on_save", {"default": False}],
-            "hash_length": ["hash_length", {"default": None}],
-        },
-    ),
-], ["^django_common\.db_fields\.RandomHashField"])
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([
+        (
+            [RandomHashField],  # Class(es) these apply to
+            [],         # Positional arguments (not used)
+            {           # Keyword argument
+                "update_on_save": ["update_on_save", {"default": False}],
+                "hash_length": ["hash_length", {"default": None}],
+            },
+        ),
+    ], ["^django_common\.db_fields\.RandomHashField"])
+except ImportError:
+    pass
 
 
 class BaseEncryptedField(models.Field):
-    '''This code is based on the djangosnippet #1095
-    You can find the original at http://www.djangosnippets.org/snippets/1095/'''
-
+    """
+    This code is based on the djangosnippet #1095
+    You can find the original at http://www.djangosnippets.org/snippets/1095/
+    """
     def __init__(self, *args, **kwargs):
         cipher = kwargs.pop('cipher', 'AES')
         imp = __import__('Crypto.Cipher', globals(), locals(), [cipher], -1)
@@ -173,7 +195,7 @@ class BaseEncryptedField(models.Field):
         models.Field.__init__(self, *args, **kwargs)
 
     def _is_encrypted(self, value):
-        return isinstance(value, basestring) and value.startswith(self.prefix)
+        return isinstance(value, string_types) and value.startswith(self.prefix)
 
     def _get_padding(self, value):
         mod = len(value) % self.cipher.block_size
@@ -190,7 +212,8 @@ class BaseEncryptedField(models.Field):
         if value is not None and not self._is_encrypted(value):
             padding = self._get_padding(value)
             if padding > 0:
-                value += "\0" + ''.join([random.choice(string.printable) for index in range(padding - 1)])
+                suffix = [random.choice(string.printable) for _ in range(padding - 1)]
+                value += "\0" + ''.join(suffix)
             value = self.prefix + binascii.b2a_hex(self.cipher.encrypt(value))
         return value
 
@@ -206,11 +229,15 @@ class EncryptedTextField(BaseEncryptedField):
         defaults.update(kwargs)
         return super(EncryptedTextField, self).formfield(**defaults)
 
-add_introspection_rules([
-    (
-        [EncryptedTextField], [], {},
-    ),
-], ["^django_common\.db_fields\.EncryptedTextField"])
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([
+        (
+            [EncryptedTextField], [], {},
+        ),
+    ], ["^django_common\.db_fields\.EncryptedTextField"])
+except ImportError:
+    pass
 
 
 class EncryptedCharField(BaseEncryptedField):
@@ -224,8 +251,12 @@ class EncryptedCharField(BaseEncryptedField):
         defaults.update(kwargs)
         return super(EncryptedCharField, self).formfield(**defaults)
 
-add_introspection_rules([
-    (
-        [EncryptedCharField], [], {},
-    ),
-], ["^django_common\.db_fields\.EncryptedCharField"])
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([
+        (
+            [EncryptedCharField], [], {},
+        ),
+    ], ["^django_common\.db_fields\.EncryptedCharField"])
+except ImportError:
+    pass

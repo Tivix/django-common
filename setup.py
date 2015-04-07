@@ -2,12 +2,10 @@
 
 try:
     from setuptools import setup, find_packages
-    from setuptools.command.test import test
 except ImportError:
     from ez_setup import use_setuptools
     use_setuptools()
     from setuptools import setup, find_packages
-    from setuptools.command.test import test
 
 from django_common import settings
 
@@ -24,18 +22,16 @@ setup(
     author='Tivix',
     author_email='dev@tivix.com',
     url='http://github.com/tivix/django-common',
-    description = 'Common things every Django app needs!',
+    description='Common things every Django app needs!',
     packages=find_packages(),
     long_description=long_description,
-    keywords = 'django',
+    keywords='django',
     zip_safe=False,
     install_requires=[
-        'Django>=1.4.2',
-        'South>=0.7.2'
+        'Django>=1.4.2'
     ],
-    test_suite = 'django_common.tests',
+    test_suite='django_common.tests',
     include_package_data=True,
-    # cmdclass={},
     classifiers=[
         'Framework :: Django',
         'Intended Audience :: Developers',

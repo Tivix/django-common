@@ -1,5 +1,8 @@
+from __future__ import print_function, unicode_literals, with_statement, division
+
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+
 
 class LoginRequiredMixin(object):
     @method_decorator(login_required)

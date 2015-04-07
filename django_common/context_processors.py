@@ -1,3 +1,5 @@
+from __future__ import print_function, unicode_literals, with_statement, division
+
 from django.conf import settings as django_settings
 from django_common.session import SessionManager
 

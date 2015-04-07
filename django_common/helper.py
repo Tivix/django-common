@@ -1,5 +1,11 @@
 "Some common routines that can be used throughout the code."
-import hashlib, os, logging, datetime, threading
+from __future__ import print_function, unicode_literals, with_statement, division
+
+import hashlib
+import os
+import logging
+import datetime
+import threading
 
 try:
     import json
@@ -14,10 +20,11 @@ from django_common.tzinfo import utc, Pacific
 
 
 class AppException(exceptions.ValidationError):
-    """Base class for exceptions used in our system.
+    """
+    Base class for exceptions used in our system.
 
-    A common base class permits application code to distinguish between exceptions raised in our code from ones raised
-    in libraries.
+    A common base class permits application code to distinguish between exceptions raised in
+    our code from ones raised in libraries.
     """
     pass
 
@@ -39,7 +46,8 @@ class FileTooLarge(AppException):
 def get_class(kls):
     """
     Converts a string to a class.
-    Courtesy: http://stackoverflow.com/questions/452969/does-python-have-an-equivalent-to-java-class-forname/452981#452981
+    Courtesy:
+    http://stackoverflow.com/q/452969/#452981
     """
     parts = kls.split('.')
     module = ".".join(parts[:-1])
@@ -50,7 +58,10 @@ def get_class(kls):
 
 
 def is_among(value, *possibilities):
-    """Ensure that the method that has been used for the request is one of the expected ones (e.g., GET or POST)."""
+    """
+    Ensure that the method that has been used for the request is one
+    of the expected ones (e.g., GET or POST).
+    """
     for possibility in possibilities:
         if value == possibility:
             return True
@@ -60,7 +71,7 @@ def is_among(value, *possibilities):
 def form_errors_serialize(form):
     errors = {}
     for field in form.fields.keys():
-        if form.errors.has_key(field):
+        if field in form.errors:
             if form.prefix:
                 errors['%s-%s' % (form.prefix, field)] = force_text(form.errors[field])
             else:
@@ -71,7 +82,11 @@ def form_errors_serialize(form):
     return {'errors': errors}
 
 
-def json_response(data={}, errors=[], success=True):
+def json_response(data=None, errors=None, success=True):
+    if not errors:
+        errors = []
+    if not data:
+        data = {}
     data.update({
         'errors': errors,
         'success': len(errors) == 0 and success,
@@ -88,8 +103,8 @@ def sha1_hash():
 
 
 def md5_hash(image=None, max_length=None):
-    # TODO:  Figure out how much entropy is actually needed, and reduce the current number of bytes if possible if doing
-    # so will result in a performance improvement.
+    # TODO:  Figure out how much entropy is actually needed, and reduce the current number
+    # of bytes if possible if doing so will result in a performance improvement.
     if max_length:
         assert max_length > 0
 
@@ -104,8 +119,9 @@ def start_thread(target, *args):
 
 
 def send_mail(subject, message, from_email, recipient_emails, files=None,
-        html=False, reply_to=None, bcc=None, cc=None, files_manually=None):
-    """Sends email with advanced optional parameters
+              html=False, reply_to=None, bcc=None, cc=None, files_manually=None):
+    """
+    Sends email with advanced optional parameters
 
     To attach non-file content (e.g. content not saved on disk), use
     files_manually parameter and provide list of 3 element tuples, e.g.
@@ -116,7 +132,8 @@ def send_mail(subject, message, from_email, recipient_emails, files=None,
     try:
         logging.debug('Sending mail to: %s' % ', '.join(r for r in recipient_emails))
         logging.debug('Message: %s' % message)
-        email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails, bcc, cc=cc)
+        email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails,
+                                              bcc, cc=cc)
         if html:
             email.content_subtype = "html"
         if files:
@@ -130,20 +147,27 @@ def send_mail(subject, message, from_email, recipient_emails, files=None,
         email.send()
     except Exception as e:
         # TODO:  Raise error again so that more information is included in the logs?
-        logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email, recipient_emails, e))
+        logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email,
+                                                                       recipient_emails, e))
 
 
-def send_mail_in_thread(subject, message, from_email, recipient_emails, files=None, html=False, reply_to=None, bcc=None, cc=None, files_manually=None):
-    start_thread(send_mail, subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc, files_manually)
+def send_mail_in_thread(subject, message, from_email, recipient_emails, files=None, html=False,
+                        reply_to=None, bcc=None, cc=None, files_manually=None):
+    start_thread(send_mail, subject, message, from_email, recipient_emails, files, html,
+                 reply_to, bcc, cc, files_manually)
 
 
-def send_mail_using_template(subject, template_name, from_email, recipient_emails, context_map, in_thread=False, files=None, html=False, reply_to=None, bcc=None, cc=None, files_manually=None):
+def send_mail_using_template(subject, template_name, from_email, recipient_emails, context_map,
+                             in_thread=False, files=None, html=False, reply_to=None, bcc=None,
+                             cc=None, files_manually=None):
     t = get_template(template_name)
     message = t.render(Context(context_map))
     if in_thread:
-        return send_mail_in_thread(subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc, files_manually)
+        return send_mail_in_thread(subject, message, from_email, recipient_emails, files, html,
+                                   reply_to, bcc, cc, files_manually)
     else:
-        return send_mail(subject, message, from_email, recipient_emails, files, html, reply_to, bcc, cc, files_manually)
+        return send_mail(subject, message, from_email, recipient_emails, files, html, reply_to,
+                         bcc, cc, files_manually)
 
 
 def utc_to_pacific(timestamp):
@@ -154,42 +178,52 @@ def pacific_to_utc(timestamp):
     return timestamp.replace(tzinfo=Pacific).astimezone(utc)
 
 
-def humanize_time_since(timestamp = None):
-    """Returns a fuzzy time since. Will only return the largest time. EX: 20 days, 14 min"""
-
+def humanize_time_since(timestamp=None):
+    """
+    Returns a fuzzy time since. Will only return the largest time. EX: 20 days, 14 min
+    """
     timeDiff = datetime.datetime.now() - timestamp
     days = timeDiff.days
-    hours = timeDiff.seconds/3600
-    minutes = timeDiff.seconds%3600/60
-    seconds = timeDiff.seconds%3600%60
+    hours = timeDiff.seconds / 3600
+    minutes = timeDiff.seconds % 3600 / 60
+    seconds = timeDiff.seconds % 3600 % 60
 
     str = ""
-    tStr = ""
     if days > 0:
-        if days == 1:   tStr = "day"
-        else:           tStr = "days"
-        str = str + "%s %s" %(days, tStr)
+        if days == 1:
+            t_str = "day"
+        else:
+            t_str = "days"
+        str += "%s %s" % (days, t_str)
         return str
     elif hours > 0:
-        if hours == 1:  tStr = "hour"
-        else:           tStr = "hours"
-        str = str + "%s %s" %(hours, tStr)
+        if hours == 1:
+            t_str = "hour"
+        else:
+            t_str = "hours"
+        str += "%s %s" % (hours, t_str)
         return str
     elif minutes > 0:
-        if minutes == 1:tStr = "min"
-        else:           tStr = "mins"
-        str = str + "%s %s" %(minutes, tStr)
+        if minutes == 1:
+            t_str = "min"
+        else:
+            t_str = "mins"
+        str += "%s %s" % (minutes, t_str)
         return str
     elif seconds > 0:
-        if seconds == 1:tStr = "sec"
-        else:           tStr = "secs"
-        str = str + "%s %s" %(seconds, tStr)
+        if seconds == 1:
+            t_str = "sec"
+        else:
+            t_str = "secs"
+        str += "%s %s" % (seconds, t_str)
         return str
     else:
         return str
 
 
 def chunks(l, n):
-    """ split successive n-sized chunks from a list."""
-    for i in xrange(0, len(l), n):
-        yield l[i:i+n]
+    """
+    split successive n-sized chunks from a list.
+    """
+    for i in range(0, len(l), n):
+        yield l[i:i + n]

@@ -1,3 +1,5 @@
+from __future__ import print_function, unicode_literals, with_statement, division
+
 import os
 
 from django.conf import settings
@@ -63,5 +65,6 @@ class CustomFileEmailBackend(FileEmailBackend):
     def _get_filename(self):
         filename = super(CustomFileEmailBackend, self)._get_filename()
         if hasattr(settings, 'EMAIL_FILE_EXT'):
-            filename = '%s.%s' % (os.path.splitext(filename)[0], settings.EMAIL_FILE_EXT.strip('.'))
+            filename = '%s.%s' % (os.path.splitext(filename)[0],
+                                  settings.EMAIL_FILE_EXT.strip('.'))
         return filename

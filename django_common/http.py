@@ -1,7 +1,7 @@
-from StringIO import StringIO
+from __future__ import print_function, unicode_literals, with_statement, division
 
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect, Http404
+from django.http import HttpResponse
+
 try:
     import json
 except ImportError:
@@ -9,36 +9,50 @@ except ImportError:
 
 
 class JsonResponse(HttpResponse):
-  def __init__(self, data={ }, errors=[ ], success=True):
-    """
-    data is a map, errors a list
-    """
-    json = json_response(data=data, errors=errors, success=success)
-    super(JsonResponse, self).__init__(json, content_type='application/json')
+    def __init__(self, data=None, errors=None, success=True):
+        """
+        data is a map, errors a list
+        """
+        if not errors:
+            errors = []
+        if not data:
+            data = {}
+        json = json_response(data=data, errors=errors, success=success)
+        super(JsonResponse, self).__init__(json, content_type='application/json')
+
 
 class JsonpResponse(HttpResponse):
-  """
-  Padded JSON response, used for widget XSS
-  """
-  def __init__(self, request, data={ }, errors=[ ], success=True):
     """
-    data is a map, errors a list
+    Padded JSON response, used for widget XSS
     """
-    json = json_response(data=data, errors=errors, success=success)
-    js = "%s(%s)" % (request.GET.get("jsonp", "jsonp_callback"), json)
-    super(JsonpResponse, self).__init__(js, mimetype='application/javascipt')
+    def __init__(self, request, data=None, errors=None, success=True):
+        """
+        data is a map, errors a list
+        """
+        if not errors:
+            errors = []
+        if not data:
+            data = {}
+        json = json_response(data=data, errors=errors, success=success)
+        js = "%s(%s)" % (request.GET.get("jsonp", "jsonp_callback"), json)
+        super(JsonpResponse, self).__init__(js, mimetype='application/javascipt')
 
-def json_response(data={ }, errors=[ ], success=True):
-  data.update({
-    'errors': errors,
-    'success': len(errors) == 0 and success,
-  })
-  return json.dumps(data)
+
+def json_response(data=None, errors=None, success=True):
+    if not errors:
+        errors = []
+    if not data:
+        data = {}
+    data.update({
+        'errors': errors,
+        'success': len(errors) == 0 and success,
+    })
+    return json.dumps(data)
 
 
 class XMLResponse(HttpResponse):
-  def __init__(self, data):
-    """
-    data is the entire xml body/document
-    """
-    super(XMLResponse, self).__init__(data, mimetype='text/xml')
+    def __init__(self, data):
+        """
+        data is the entire xml body/document
+        """
+        super(XMLResponse, self).__init__(data, mimetype='text/xml')
