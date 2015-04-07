@@ -7,7 +7,10 @@ from django.db import transaction
 PY2 = sys.version_info[0] == 2
 
 # commit_on_success was removed in 1.8, use atomic
-atomic_decorator = getattr(transaction, 'atomic', getattr(transaction, 'commit_on_success'))
+if hasattr(transaction, 'atomic'):
+    atomic_decorator = getattr(transaction, 'atomic')
+else:
+    atomic_decorator = getattr(transaction, 'commit_on_success')
 
 if not PY2:
     string_types = (str,)
