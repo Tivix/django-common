@@ -184,7 +184,7 @@ class BaseEncryptedField(models.Field):
         cipher = kwargs.pop('cipher', 'AES')
         imp = __import__('Crypto.Cipher', globals(), locals(), [cipher], -1)
         self.cipher = getattr(imp, cipher).new(settings.SECRET_KEY[:32])
-        self.prefix = '$%s$' % cipher
+        self.prefix = '${0}$'.format(cipher)
 
         max_length = kwargs.get('max_length', 40)
         mod = max_length % self.cipher.block_size

@@ -65,7 +65,7 @@ def render_form_field(parser, token):
             tag_name, form_field = token.split_contents()
     except ValueError:
         raise template.TemplateSyntaxError(
-            "Unable to parse arguments for %r" % token.contents.split()[0])
+            "Unable to parse arguments for {0}".format(repr(token.contents.split()[0])))
 
     return FormFieldNode(form_field, help_text=help_text, css_classes=css_classes)
 

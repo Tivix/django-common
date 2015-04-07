@@ -16,7 +16,7 @@ class SessionManagerBase(object):
         self._prepend_key_with = prepend_key_with
 
     def _get_or_set(self, key, value):
-        key = '%s%s' % (self._prepend_key_with, key)
+        key = '{0}{1}'.format(self._prepend_key_with, key)
 
         if value is not None:
             self._session[key] = value
@@ -25,7 +25,7 @@ class SessionManagerBase(object):
 
     def reset_keys(self):
         for key in self._SESSION_KEYS:
-            key = '%s%s' % (self._prepend_key_with, key)
+            key = '{0}{1}'.format(self._prepend_key_with, key)
 
             if key in self._session:
                 del self._session[key]
@@ -77,6 +77,7 @@ class SessionManager(SessionManagerBase):
         return self._get_or_set(self.USERTIME, {})
 
     def generic_var(self, key, value=None):
-        """Stores generic variables in the session prepending it with
-        _GENERIC_VAR_KEY_PREFIX."""
-        return self._get_or_set('%s%s' % (self._GENERIC_VAR_KEY_PREFIX, key), value)
+        """
+        Stores generic variables in the session prepending it with _GENERIC_VAR_KEY_PREFIX.
+        """
+        return self._get_or_set('{0}{1}'.format(self._GENERIC_VAR_KEY_PREFIX, key), value)

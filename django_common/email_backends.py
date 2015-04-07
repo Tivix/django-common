@@ -65,6 +65,6 @@ class CustomFileEmailBackend(FileEmailBackend):
     def _get_filename(self):
         filename = super(CustomFileEmailBackend, self)._get_filename()
         if hasattr(settings, 'EMAIL_FILE_EXT'):
-            filename = '%s.%s' % (os.path.splitext(filename)[0],
-                                  settings.EMAIL_FILE_EXT.strip('.'))
+            filename = '{0}.{1}'.format(os.path.splitext(filename)[0],
+                                        settings.EMAIL_FILE_EXT.strip('.'))
         return filename
