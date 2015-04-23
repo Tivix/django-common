@@ -14,7 +14,8 @@ class WWWRedirectMiddleware(object):
     def process_request(self, request):
         if settings.IS_PROD and request.get_host() != settings.DOMAIN_NAME:
             proto_suffix = 's' if request.is_secure() else ''
-            url = 'http%s://%s%s' % (proto_suffix, settings.DOMAIN_NAME, request.get_full_path())
+            url = 'http{0}://{1}{2}'.format(proto_suffix, settings.DOMAIN_NAME,
+                                            request.get_full_path())
             return HttpResponsePermanentRedirect(url)
         return None
 
@@ -36,7 +37,7 @@ class SSLRedirectMiddleware(object):
     """
     def process_request(self, request):
         if not request.is_secure():
-            url = 'https://%s%s' % (settings.DOMAIN_NAME, request.get_full_path())
+            url = 'https://{0}{1}'.format(settings.DOMAIN_NAME, request.get_full_path())
             return HttpResponseRedirect(url)
         return None
 
@@ -57,8 +58,8 @@ class NoSSLRedirectMiddleware(object):
         if view_func.func_name != self.__DECORATOR_INNER_FUNC_NAME \
                 and not (self.__is_in_admin(request) and settings.IS_PROD) \
                 and request.is_secure():  # request is secure, but view is not decorated
-            url = 'http://%s%s' % (settings.DOMAIN_NAME, request.get_full_path())
+            url = 'http://{0}{1}'.format(settings.DOMAIN_NAME, request.get_full_path())
             return HttpResponseRedirect(url)
         elif self.__is_in_admin(request) and not request.is_secure() and settings.IS_PROD:
-            url = 'https://%s%s' % (settings.DOMAIN_NAME, request.get_full_path())
+            url = 'https://{0}{1}'.format(settings.DOMAIN_NAME, request.get_full_path())
             return HttpResponseRedirect(url)

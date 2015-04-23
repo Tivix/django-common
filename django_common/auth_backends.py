@@ -16,6 +16,6 @@ class EmailBackend(ModelBackend):
             if user.check_password(password):
                 return user
         except (User.DoesNotExist, User.MultipleObjectsReturned):
-            logging.warn('Unsuccessful login attempt using username/email: %s' % username)
+            logging.warn('Unsuccessful login attempt using username/email: {0}'.format(username))
 
         return None

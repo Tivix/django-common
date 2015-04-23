@@ -273,7 +273,7 @@ class %(model)sTest(TestCase):
 class Scaffold(object):
 
     def _info(self, msg, indent=0):
-        print("%s %s" % ("\t" * int(indent), msg))
+        print("{0} {1}".format("\t" * int(indent), msg))
 
     def __init__(self, app, model, fields):
         self.app = app
@@ -287,12 +287,12 @@ class Scaffold(object):
 
     def get_import(self, model):
         for dir in listdir(self.SCAFFOLD_APPS_DIR):
-            if path.isdir('%s%s' % (self.SCAFFOLD_APPS_DIR, dir)) \
-                    and path.exists('%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, dir)):
-                with open('%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, dir), 'r') as dir_models_fp:
+            if path.isdir('{0}{1}'.format(self.SCAFFOLD_APPS_DIR, dir)) \
+                    and path.exists('{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, dir)):
+                with open('{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, dir), 'r') as fp:
                     # Check if model exists
-                    for line in dir_models_fp.readlines():
-                        if 'class %s(models.Model)' % model in line:
+                    for line in fp.readlines():
+                        if 'class {0}(models.Model)'.format(model) in line:
                             # print "Foreign key '%s' was found in app %s..." % (model, dir)
                             return IMPORT_MODEL_TEMPLATE % {'app': dir, 'model': model}
         return None
@@ -300,7 +300,7 @@ class Scaffold(object):
     def is_imported(self, path, model):
         with open(path, 'r') as import_file:
             for line in import_file.readlines():
-                if 'import %s' % model in line:
+                if 'import {0}'.format(model) in line:
                     # print "Foreign key '%s' was found in models.py..." % (foreign)
                     return True
         return False
@@ -346,7 +346,7 @@ class Scaffold(object):
         # Check if view already exists
         with open(path, 'r') as view_file:
             for line in view_file.readlines():
-                if 'def %s(' % view in line:
+                if 'def {0}('.format(view) in line:
                     return True
         return False
 
@@ -415,46 +415,47 @@ class Scaffold(object):
             name = field[1]
             # Check if this foreign key is already in models.py
             if foreign in ('User', 'Group'):
-                if not self.is_imported('%s%s/models.py' % (
-                        self.SCAFFOLD_APPS_DIR, self.app), foreign):
+                if not self.is_imported('{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR,
+                                                                  self.app), foreign):
                     self.imports.append('\nfrom django.contrib.auth.models import User, Group\n')
                 return FOREIGNFIELD_TEMPLATE % {'name': name, 'foreign': foreign, 'null': 'True'}
-            if self.is_imported('%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, self.app), foreign):
+            if self.is_imported('{0}{1}/models.py'.format(
+                    self.SCAFFOLD_APPS_DIR, self.app), foreign):
                 return FOREIGNFIELD_TEMPLATE % {'name': name, 'foreign': foreign, 'null': 'True'}
             # Check imports
             if self.get_import(foreign):
                 self.imports.append(self.get_import(foreign))
                 return FOREIGNFIELD_TEMPLATE % {'name': name, 'foreign': foreign, 'null': 'True'}
 
-            self._info('error\t%s%s/models.py\t%s class not found' % (self.SCAFFOLD_APPS_DIR,
-                                                                      self.app, foreign), 1)
+            self._info('error\t{0}{1}/models.py\t{2} class not found'.format(
+                self.SCAFFOLD_APPS_DIR, self.app, foreign), 1)
             return None
 
     def create_app(self):
         self._info("    App    ")
         self._info("===========")
-        if self.SCAFFOLD_APPS_DIR and not path.exists('%s' % self.SCAFFOLD_APPS_DIR):
-            raise Exception("SCAFFOLD_APPS_DIR %s does not exists" % self.SCAFFOLD_APPS_DIR)
-        if not path.exists('%s%s' % (self.SCAFFOLD_APPS_DIR, self.app)):
-            system('python manage.py startapp %s' % self.app)
-            system('mv %s %s%s' % (self.app, self.SCAFFOLD_APPS_DIR, self.app))
-            self._info("create\t%s%s" % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+        if self.SCAFFOLD_APPS_DIR and not path.exists('{0}'.format(self.SCAFFOLD_APPS_DIR)):
+            raise Exception(
+                "SCAFFOLD_APPS_DIR {0} does not exists".format(self.SCAFFOLD_APPS_DIR))
+        if not path.exists('{0}{1}'.format(self.SCAFFOLD_APPS_DIR, self.app)):
+            system('python manage.py startapp {0}'.format(self.app))
+            system('mv {0} {1}{2}'.format(self.app, self.SCAFFOLD_APPS_DIR, self.app))
+            self._info("create\t{0}{1}".format(self.SCAFFOLD_APPS_DIR, self.app), 1)
         else:
-            self._info("exists\t%s%s" % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            self._info("exists\t{0}{1}".format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
     def create_views(self):
         self._info("   Views   ")
         self._info("===========")
         # Open models.py to read
-        view_path = '%s%s/views.py' % (self.SCAFFOLD_APPS_DIR, self.app)
+        view_path = '{0}{1}/views.py'.format(self.SCAFFOLD_APPS_DIR, self.app)
 
         # Check if urls.py exists
-
-        if path.exists('%s%s/views.py' % (self.SCAFFOLD_APPS_DIR, self.app)):
-            self._info('exists\t%s%s/views.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+        if path.exists('{0}{1}/views.py'.format(self.SCAFFOLD_APPS_DIR, self.app)):
+            self._info('exists\t{0}{1}/views.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
         else:
-            with open("%s%s/views.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'w'):
-                self._info('create\t%s%s/views.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            with open("{0}{1}/views.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'w'):
+                self._info('create\t{0}{1}/views.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
         import_list = list()
         view_list = list()
@@ -469,34 +470,34 @@ class Scaffold(object):
         lower_model = self.model.lower()
 
         # Check if view already exists
-        if not self.view_exists(view_path, "%s_list" % lower_model):
+        if not self.view_exists(view_path, "{0}_list".format(lower_model)):
             view_list.append(LIST_VIEW % {
                 'lower_model': lower_model,
                 'model': self.model,
                 'app': self.app,
             })
-            self._info("added \t%s\t%s_view" % (view_path, lower_model), 1)
+            self._info("added \t{0}\t{1}_view".format(view_path, lower_model), 1)
         else:
-            self._info("exists\t%s\t%s_view" % (view_path, lower_model), 1)
+            self._info("exists\t{0}\t{1}_view".format(view_path, lower_model), 1)
 
-        if not self.view_exists(view_path, "%s_details" % lower_model):
+        if not self.view_exists(view_path, "{0}_details".format(lower_model)):
             view_list.append(DETAILS_VIEW % {
                 'lower_model': lower_model,
                 'model': self.model,
                 'app': self.app,
             })
-            self._info("added \t%s\t%s_details" % (view_path, lower_model), 1)
+            self._info("added \t{0}\t{1}_details".format(view_path, lower_model), 1)
         else:
-            self._info("exists\t%s\t%s_details" % (view_path, lower_model), 1)
+            self._info("exists\t{0}\t{1}_details".format(view_path, lower_model), 1)
 
-        if not self.view_exists(view_path, "%s_delete" % lower_model):
+        if not self.view_exists(view_path, "{0}_delete".format(lower_model)):
             view_list.append(DELETE_VIEW % {
                 'lower_model': lower_model,
                 'model': self.model,
             })
-            self._info("added \t%s\t%s_delete" % (view_path, lower_model), 1)
+            self._info("added \t{0}\t{1}_delete".format(view_path, lower_model), 1)
         else:
-            self._info("exists\t%s\t%s_delete" % (view_path, lower_model), 1)
+            self._info("exists\t{0}\t{1}_delete".format(view_path, lower_model), 1)
 
         # Open views.py to append
         with open(view_path, 'a') as view_file:
@@ -507,16 +508,16 @@ class Scaffold(object):
         self._info("   Model   ")
         self._info("===========")
         # Open models.py to read
-        with open('%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, self.app), 'r') as models_file:
-            self.models_file = models_file
+        with open('{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
+            self.models_file = fp
 
         # Check if model already exists
         for line in self.models_file.readlines():
-            if 'class %s' % self.model in line:
-                self._info('exists\t%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            if 'class {0}'.format(self.model) in line:
+                self._info('exists\t{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
                 return
 
-        self._info('create\t%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+        self._info('create\t{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
         # Prepare fields
         self.imports = list()
         fields = list()
@@ -524,13 +525,13 @@ class Scaffold(object):
             new_field = self.get_field(field)
             if new_field:
                 fields.append(new_field)
-                self._info('added\t%s%s/models.py\t%s field' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                                field.split(':')[1]), 1)
+                self._info('added\t{0}{1}/models.py\t{2} field'.format(
+                    self.SCAFFOLD_APPS_DIR, self.app, field.split(':')[1]), 1)
 
         # Open models.py to append
-        with open('%s%s/models.py' % (self.SCAFFOLD_APPS_DIR, self.app), 'a') as models_file:
-            models_file.write(''.join(import_line for import_line in self.imports))
-            models_file.write(MODEL_TEMPLATE % (self.model, ''.join(field for field in fields)))
+        with open('{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
+            fp.write(''.join(import_line for import_line in self.imports))
+            fp.write(MODEL_TEMPLATE % (self.model, ''.join(field for field in fields)))
 
     def create_templates(self):
         self._info(" Templates ")
@@ -538,53 +539,54 @@ class Scaffold(object):
 
         # Check if template dir exists
 
-        if path.exists('%s%s/templates/' % (self.SCAFFOLD_APPS_DIR, self.app)):
-            self._info('exists\t%s%s/templates/' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+        if path.exists('{0}{1}/templates/'.format(self.SCAFFOLD_APPS_DIR, self.app)):
+            self._info('exists\t{0}{1}/templates/'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
         else:
-            mkdir("%s%s/templates/" % (self.SCAFFOLD_APPS_DIR, self.app))
-            self._info('create\t%s%s/templates/' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            mkdir("{0}{1}/templates/".format(self.SCAFFOLD_APPS_DIR, self.app))
+            self._info('create\t{0}{1}/templates/'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
         # Check if model template dir exists
 
-        if path.exists('%s%s/templates/%s/' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                               self.model.lower())):
-            self._info('exists\t%s%s/templates/%s/' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                       self.model.lower()), 1)
+        if path.exists('{0}{1}/templates/{2}/'.format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                      self.model.lower())):
+            self._info('exists\t{0}{1}/templates/{2}/'.format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                              self.model.lower()), 1)
         else:
-            mkdir("%s%s/templates/%s/" % (self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()))
-            self._info('create\t%s%s/templates/%s/' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                       self.model.lower()), 1)
+            mkdir("{0}{1}/templates/{2}/".format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                 self.model.lower()))
+            self._info('create\t{0}{1}/templates/{2}/'.format(
+                self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
 
         # Check if list.html exists
 
-        if path.exists('%s%s/templates/%s/list.html' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                        self.model.lower())):
-            self._info('exists\t%s%s/templates/%s/list.html' % (
+        if path.exists('{0}{1}/templates/{2}/list.html'.format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                               self.model.lower())):
+            self._info('exists\t{0}{1}/templates/{2}/list.html'.format(
                 self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
         else:
-            with open("%s%s/templates/%s/list.html" % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                       self.model.lower()), 'w') as fp:
+            with open("{0}{1}/templates/{2}/list.html".format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                              self.model.lower()), 'w') as fp:
                 fp.write(TEMPLATE_LIST_CONTENT % {
                     'model': self.model.lower(),
                     'title': self.model.lower(),
                 })
-            self._info('create\t%s%s/templates/%s/list.html' % (
+            self._info('create\t{0}{1}/templates/{2}/list.html'.format(
                 self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
 
         # Check if details.html exists
 
-        if path.exists('%s%s/templates/%s/details.html' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                           self.model.lower())):
-            self._info('exists\t%s%s/templates/%s/details.html' % (
+        if path.exists('{0}{1}/templates/{2}/details.html'.format(
+                self.SCAFFOLD_APPS_DIR, self.app, self.model.lower())):
+            self._info('exists\t{0}{1}/templates/{2}/details.html'.format(
                 self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
         else:
-            with open("%s%s/templates/%s/details.html" % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                          self.model.lower()), 'w') as fp:
+            with open("{0}{1}/templates/{2}/details.html".format(
+                    self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 'w') as fp:
                 fp.write(TEMPLATE_DETAILS_CONTENT % {
                     'model': self.model.lower(),
                     'title': self.model.lower(),
                 })
-            self._info('create\t%s%s/templates/%s/details.html' % (
+            self._info('create\t{0}{1}/templates/{2}/details.html'.format(
                 self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
 
     def create_urls(self):
@@ -593,11 +595,11 @@ class Scaffold(object):
 
         # Check if urls.py exists
 
-        if path.exists('%s%s/urls.py' % (self.SCAFFOLD_APPS_DIR, self.app)):
+        if path.exists('{0}{1}/urls.py'.format(self.SCAFFOLD_APPS_DIR, self.app)):
 
             # If does we need to add urls
             new_urls = ''
-            with open("%s%s/urls.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
+            with open("{0}{1}/urls.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
                 for line in fp.readlines():
                     new_urls += line
                     if 'urlpatterns' in line:
@@ -605,16 +607,16 @@ class Scaffold(object):
                             'app': self.app,
                             'model': self.model.lower(),
                         }
-            with open("%s%s/urls.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
+            with open("{0}{1}/urls.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
                 fp.write(new_urls)
-            self._info('update\t%s%s/urls.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            self._info('update\t{0}{1}/urls.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
         else:
-            with open("%s%s/urls.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
+            with open("{0}{1}/urls.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
                 fp.write(URL_CONTENT % {
                     'app': self.app,
                     'model': self.model.lower(),
                 })
-            self._info('create\t%s%s/urls.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            self._info('create\t{0}{1}/urls.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
     def create_admin(self):
         self._info("    Admin  ")
@@ -622,64 +624,64 @@ class Scaffold(object):
 
         # Check if admin.py exists
 
-        if path.exists('%s%s/admin.py' % (self.SCAFFOLD_APPS_DIR, self.app)):
-            self._info('exists\t%s%s/admin.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+        if path.exists('{0}{1}/admin.py'.format(self.SCAFFOLD_APPS_DIR, self.app)):
+            self._info('exists\t{0}{1}/admin.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
         else:
-            with open("%s%s/admin.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
+            with open("{0}{1}/admin.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
                 fp.write("from django.contrib import admin\n")
-            self._info('create\t%s%s/urls.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            self._info('create\t{0}{1}/urls.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
         # Check if admin entry already exists
 
-        with open("%s%s/admin.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
+        with open("{0}{1}/admin.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
             content = fp.read()
-        if "admin.site.register(%s)" % self.model in content:
-            self._info('exists\t%s%s/admin.py\t%s' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                      self.model.lower()), 1)
+        if "admin.site.register({0})".format(self.model) in content:
+            self._info('exists\t{0}{1}/admin.py\t{2}'.format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                             self.model.lower()), 1)
         else:
-            with open("%s%s/admin.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
+            with open("{0}{1}/admin.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
                 fp.write(ADMIN_CONTENT % {'app': self.app, 'model': self.model})
-            self._info('added\t%s%s/admin.py\t%s' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                     self.model.lower()), 1)
+            self._info('added\t{0}{1}/admin.py\t{2}'.format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                            self.model.lower()), 1)
 
     def create_forms(self):
         self._info("    Forms  ")
         self._info("===========")
 
         # Check if forms.py exists
-        if path.exists('%s%s/forms.py' % (self.SCAFFOLD_APPS_DIR, self.app)):
-            self._info('exists\t%s%s/forms.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+        if path.exists('{0}{1}/forms.py'.format(self.SCAFFOLD_APPS_DIR, self.app)):
+            self._info('exists\t{0}{1}/forms.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
         else:
-            with open("%s%s/forms.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
+            with open("{0}{1}/forms.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
                 fp.write("from django import forms\n")
-            self._info('create\t%s%s/forms.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            self._info('create\t{0}{1}/forms.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
         # Check if form entry already exists
 
-        with open("%s%s/forms.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
+        with open("{0}{1}/forms.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
             content = fp.read()
-        if "class %sForm" % self.model in content:
-            self._info('exists\t%s%s/forms.py\t%s' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                      self.model.lower()), 1)
+        if "class {0}Form".format(self.model) in content:
+            self._info('exists\t{0}{1}/forms.py\t{2}'.format(
+                self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
         else:
-            with open("%s%s/forms.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
+            with open("{0}{1}/forms.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
                 fp.write(FORM_CONTENT % {'app': self.app, 'model': self.model})
-            self._info('added\t%s%s/forms.py\t%s' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                     self.model.lower()), 1)
+            self._info('added\t{0}{1}/forms.py\t{2}'.format(
+                self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
 
     def create_tests(self):
         self._info("   Tests   ")
         self._info("===========")
 
         # Check if tests.py exists
-        if path.exists('%s%s/tests.py' % (self.SCAFFOLD_APPS_DIR, self.app)):
-            self._info('exists\t%s%s/tests.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+        if path.exists('{0}{1}/tests.py'.format(self.SCAFFOLD_APPS_DIR, self.app)):
+            self._info('exists\t{0}{1}/tests.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
             # Check if imports exists:
             import_testcase = True
             import_user = True
             import_reverse = True
 
-            with open("%s%s/tests.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
+            with open("{0}{1}/tests.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
                 for line in fp.readlines():
                     if 'import TestCase' in line:
                         import_testcase = False
@@ -688,7 +690,7 @@ class Scaffold(object):
                     if 'import reverse' in line:
                         import_reverse = False
 
-            with open("%s%s/tests.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
+            with open("{0}{1}/tests.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
                 if import_testcase:
                     fp.write("from django.test import TestCase\n")
                 if import_user:
@@ -696,27 +698,27 @@ class Scaffold(object):
                 if import_reverse:
                     fp.write("from django.core.urlresolvers import reverse\n")
         else:
-            with open("%s%s/tests.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
+            with open("{0}{1}/tests.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'w') as fp:
                 fp.write("from django.test import TestCase\n")
                 fp.write("from django.contrib.auth.models import User\n")
                 fp.write("from django.core.urlresolvers import reverse\n")
-            self._info('create\t%s%s/tests.py' % (self.SCAFFOLD_APPS_DIR, self.app), 1)
+            self._info('create\t{0}{1}/tests.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
         # Check if test class already exists
-        with open("%s%s/tests.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
+        with open("{0}{1}/tests.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
             content = fp.read()
-        if "class %sTest" % self.model in content:
-            self._info('exists\t%s%s/tests.py\t%s' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                      self.model.lower()), 1)
+        if "class {0}Test".format(self.model) in content:
+            self._info('exists\t{0}{1}/tests.py\t{2}'.format(
+                self.SCAFFOLD_APPS_DIR, self.app, self.model.lower()), 1)
         else:
-            with open("%s%s/tests.py" % (self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
+            with open("{0}{1}/tests.py".format(self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
                 fp.write(TESTS_CONTENT % {
                     'app': self.app,
                     'model': self.model,
                     'lower_model': self.model.lower(),
                 })
-            self._info('added\t%s%s/tests.py\t%s' % (self.SCAFFOLD_APPS_DIR, self.app,
-                                                     self.model.lower()), 1)
+            self._info('added\t{0}{1}/tests.py\t{2}'.format(self.SCAFFOLD_APPS_DIR, self.app,
+                                                            self.model.lower()), 1)
 
     def run(self):
         if not self.app:
