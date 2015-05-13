@@ -1,5 +1,7 @@
 *.pyc
 *.DS_Store
 dist
+build
 django_common_helpers.egg-info
 .idea/
+*.egg-info
