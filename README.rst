@@ -194,7 +194,7 @@ Sometimes you need to generate a new ``SECRET_KEY`` so now you can generate it u
 Sample output:
 
     $ python manage.py generate_secret_key
-    
+
     SECRET_KEY: 7,=_3t?n@'wV=p`ITIA6"CUgJReZf?s:`f~Jtl#2i=i^z%rCp-
 
 Optional arguments

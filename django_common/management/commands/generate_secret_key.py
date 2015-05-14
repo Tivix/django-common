@@ -1,8 +1,10 @@
-import string
+from __future__ import print_function, unicode_literals, with_statement, division
 
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
 from django.utils.translation import ugettext as _
+
+import string
 
 
 class Command(BaseCommand):
