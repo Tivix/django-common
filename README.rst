@@ -190,6 +190,12 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+0.7.0
+-----
+    - PEP8 codebase cleanup.
+    - Improved python3 support.
+    - Django 1.8 support.
+
 0.6.4
 -----
     - Added python3 support.
