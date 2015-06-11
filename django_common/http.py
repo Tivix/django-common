@@ -17,8 +17,8 @@ class JsonResponse(HttpResponse):
             errors = []
         if not data:
             data = {}
-        json = json_response(data=data, errors=errors, success=success)
-        super(JsonResponse, self).__init__(json, content_type='application/json')
+        json_resp = json_response(data=data, errors=errors, success=success)
+        super(JsonResponse, self).__init__(json_resp, content_type='application/json')
 
 
 class JsonpResponse(HttpResponse):
@@ -33,8 +33,8 @@ class JsonpResponse(HttpResponse):
             errors = []
         if not data:
             data = {}
-        json = json_response(data=data, errors=errors, success=success)
-        js = "%s(%s)" % (request.GET.get("jsonp", "jsonp_callback"), json)
+        json_resp = json_response(data=data, errors=errors, success=success)
+        js = "{0}({1})".format(request.GET.get("jsonp", "jsonp_callback"), json_resp)
         super(JsonpResponse, self).__init__(js, mimetype='application/javascipt')
 
 

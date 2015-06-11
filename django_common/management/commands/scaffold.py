@@ -38,4 +38,4 @@ class Command(BaseCommand):
         scaffold.run()
 
     def get_version(self):
-        return 'django-common version: %s' % settings.VERSION
+        return 'django-common version: {0}'.format(settings.VERSION)

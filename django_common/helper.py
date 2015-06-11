@@ -31,14 +31,17 @@ class AppException(exceptions.ValidationError):
 
 class InvalidContentType(AppException):
     def __init__(self, file_types, msg=None):
-        msg = msg or 'Only the following file content types are permitted: %s' % str(file_types)
+        if not msg:
+            msg = 'Only the following file ' \
+                  'content types are permitted: {0}'.format(str(file_types))
         super(self.__class__, self).__init__(msg)
         self.file_types = file_types
 
 
 class FileTooLarge(AppException):
     def __init__(self, file_size_kb, msg=None):
-        msg = msg or 'Files may not be larger than %s KB' % file_size_kb
+        if not msg:
+            msg = 'Files may not be larger than {0} KB'.format(file_size_kb)
         super(self.__class__, self).__init__(msg)
         self.file_size = file_size_kb
 
@@ -65,7 +68,7 @@ def is_among(value, *possibilities):
     for possibility in possibilities:
         if value == possibility:
             return True
-    raise Exception('A different request value was encountered than expected: %s' % value)
+    raise Exception('A different request value was encountered than expected: {0}'.format(value))
 
 
 def form_errors_serialize(form):
@@ -73,7 +76,7 @@ def form_errors_serialize(form):
     for field in form.fields.keys():
         if field in form.errors:
             if form.prefix:
-                errors['%s-%s' % (form.prefix, field)] = force_text(form.errors[field])
+                errors['{0}-{1}'.format(form.prefix, field)] = force_text(form.errors[field])
             else:
                 errors[field] = force_text(form.errors[field])
 
@@ -130,8 +133,8 @@ def send_mail(subject, message, from_email, recipient_emails, files=None,
     """
     import django.core.mail
     try:
-        logging.debug('Sending mail to: %s' % ', '.join(r for r in recipient_emails))
-        logging.debug('Message: %s' % message)
+        logging.debug('Sending mail to: {0}'.format(', '.join(r for r in recipient_emails)))
+        logging.debug('Message: {0}'.format(message))
         email = django.core.mail.EmailMessage(subject, message, from_email, recipient_emails,
                                               bcc, cc=cc)
         if html:
@@ -147,8 +150,8 @@ def send_mail(subject, message, from_email, recipient_emails, files=None,
         email.send()
     except Exception as e:
         # TODO:  Raise error again so that more information is included in the logs?
-        logging.error('Error sending message [%s] from %s to %s %s' % (subject, from_email,
-                                                                       recipient_emails, e))
+        logging.error('Error sending message [{0}] from {1} to {2} {3}'.format(
+            subject, from_email, recipient_emails, e))
 
 
 def send_mail_in_thread(subject, message, from_email, recipient_emails, files=None, html=False,
@@ -194,28 +197,28 @@ def humanize_time_since(timestamp=None):
             t_str = "day"
         else:
             t_str = "days"
-        str += "%s %s" % (days, t_str)
+        str += "{0} {1}".format(days, t_str)
         return str
     elif hours > 0:
         if hours == 1:
             t_str = "hour"
         else:
             t_str = "hours"
-        str += "%s %s" % (hours, t_str)
+        str += "{0} {1}".format(hours, t_str)
         return str
     elif minutes > 0:
         if minutes == 1:
             t_str = "min"
         else:
             t_str = "mins"
-        str += "%s %s" % (minutes, t_str)
+        str += "{0} {1}".format(minutes, t_str)
         return str
     elif seconds > 0:
         if seconds == 1:
             t_str = "sec"
         else:
             t_str = "secs"
-        str += "%s %s" % (seconds, t_str)
+        str += "{0} {1}".format(seconds, t_str)
         return str
     else:
         return str

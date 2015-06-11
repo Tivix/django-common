@@ -91,7 +91,7 @@ class NestedModelAdmin(ModelAdmin):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
-                    prefix = "%s-%s" % (prefix, prefixes[prefix])
+                    prefix = "{0}-{1}".format(prefix, prefixes[prefix])
                 formset = FormSet(data=request.POST, files=request.FILES,
                                   instance=new_object,
                                   save_as_new="_saveasnew" in request.POST,
@@ -106,8 +106,8 @@ class NestedModelAdmin(ModelAdmin):
                         for nested in inline.inline_instances:
                             for the_form in formset.forms:
                                 InlineFormSet = nested.get_formset(request, the_form.instance)
-                                prefix = "%s-%s" % (the_form.prefix,
-                                                    InlineFormSet.get_default_prefix())
+                                prefix = "{0}-{1}".format(the_form.prefix,
+                                                          InlineFormSet.get_default_prefix())
                                 formsets.append(InlineFormSet(request.POST, request.FILES,
                                                               instance=the_form.instance,
                                                               prefix=prefix))
@@ -137,7 +137,7 @@ class NestedModelAdmin(ModelAdmin):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
-                    prefix = "%s-%s" % (prefix, prefixes[prefix])
+                    prefix = "{0}-{1}".format(prefix, prefixes[prefix])
                 formset = FormSet(instance=self.model(), prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
@@ -212,7 +212,7 @@ class NestedModelAdmin(ModelAdmin):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
-                    prefix = "%s-%s" % (prefix, prefixes[prefix])
+                    prefix = "{0}-{1}".format(prefix, prefixes[prefix])
                 formset = FormSet(request.POST, request.FILES,
                                   instance=new_object, prefix=prefix,
                                   queryset=inline.queryset(request))
@@ -227,8 +227,8 @@ class NestedModelAdmin(ModelAdmin):
                         for nested in inline.inline_instances:
                             for the_form in formset.forms:
                                 InlineFormSet = nested.get_formset(request, the_form.instance)
-                                prefix = "%s-%s" % (the_form.prefix,
-                                                    InlineFormSet.get_default_prefix())
+                                prefix = "{0}-{1}".format(the_form.prefix,
+                                                          InlineFormSet.get_default_prefix())
                                 formsets.append(InlineFormSet(request.POST, request.FILES,
                                                               instance=the_form.instance,
                                                               prefix=prefix))
@@ -250,7 +250,7 @@ class NestedModelAdmin(ModelAdmin):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
                 if prefixes[prefix] != 1:
-                    prefix = "%s-%s" % (prefix, prefixes[prefix])
+                    prefix = "{0}-{1}".format(prefix, prefixes[prefix])
                 formset = FormSet(instance=obj, prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
@@ -296,7 +296,7 @@ class NestedModelAdmin(ModelAdmin):
         nested_inlines = []
         for inline in self.get_inline_instances(request):
             FormSet = inline.get_formset(request, obj)
-            prefix = "%s-%s" % (prefix, FormSet.get_default_prefix())
+            prefix = "{0}-{1}".format(prefix, FormSet.get_default_prefix())
             formset = FormSet(instance=obj, prefix=prefix)
             fieldsets = list(inline.get_fieldsets(request, obj))
             nested_inline = helpers.InlineAdminFormSet(inline, formset, fieldsets)
@@ -346,7 +346,7 @@ class NestedTabularInline(BaseModelAdmin):
             js.append('js/prepopulate.min.js')
         if self.filter_vertical or self.filter_horizontal:
             js.extend(['js/SelectBox.js', 'js/SelectFilter2.js'])
-        return forms.Media(js=['%s%s' % (settings.ADMIN_MEDIA_PREFIX, url) for url in js])
+        return forms.Media(js=['{0}{1}'.format(settings.ADMIN_MEDIA_PREFIX, url) for url in js])
     media = property(_media)
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -392,7 +392,7 @@ class NestedTabularInline(BaseModelAdmin):
         nested_inlines = []
         for inline in self.inline_instances:
             FormSet = inline.get_formset(request, obj)
-            prefix = "%s-%s" % (prefix, FormSet.get_default_prefix())
+            prefix = "{0}-{1}".format(prefix, FormSet.get_default_prefix())
             formset = FormSet(instance=obj, prefix=prefix)
             fieldsets = list(inline.get_fieldsets(request, obj))
             nested_inline = helpers.InlineAdminFormSet(inline, formset, fieldsets)
