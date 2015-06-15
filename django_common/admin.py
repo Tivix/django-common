@@ -9,7 +9,10 @@ from django.contrib.admin.helpers import AdminForm
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.utils.translation import ugettext as _
-from django.utils.encoding import force_unicode
+try:
+    from django.utils.encoding import force_unicode
+except ImportError:
+    from django.utils.encoding import force_text  # django > 1.6
 from django.utils.html import escape
 from django.forms.formsets import all_valid
 from django.contrib.admin import helpers
