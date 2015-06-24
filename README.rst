@@ -184,6 +184,25 @@ At the end you can test new app by runing test::
 
 Happy scaffolding!
 
+Generation of SECRET_KEY
+------------------------
+
+Sometimes you need to generate a new ``SECRET_KEY`` so now you can generate it using this command:
+
+    $ python manage.py generate_secret_key
+
+Sample output:
+
+    $ python manage.py generate_secret_key
+
+    SECRET_KEY: 7,=_3t?n@'wV=p`ITIA6"CUgJReZf?s:`f~Jtl#2i=i^z%rCp-
+
+Optional arguments
+
+1. ``--length`` – is the length of the key ``default=50``
+2. ``--alphabet`` – is the alphabet to use to generate the key ``default=ascii letters + punctuation symbols``
+
+
 This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 
 
