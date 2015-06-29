@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals, with_statement, divisio
 import sys
 
 from django.db import transaction
+from django.utils import encoding
 
 PY2 = sys.version_info[0] == 2
 
@@ -11,6 +12,15 @@ if hasattr(transaction, 'atomic'):
     atomic_decorator = getattr(transaction, 'atomic')
 else:
     atomic_decorator = getattr(transaction, 'commit_on_success')
+
+# ugly hack required for Python 2/3 compat
+if hasattr(encoding, 'force_unicode'):
+    force_unicode = encoding.force_unicode
+elif hasattr(encoding, 'force_text'):
+    force_unicode = encoding.force_text
+else:
+    force_unicode = lambda x: x
+
 
 if not PY2:
     string_types = (str,)
