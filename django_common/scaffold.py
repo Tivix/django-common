@@ -100,14 +100,14 @@ TEMPLATE_LIST_CONTENT = """
         <tr>
             <td style="padding: 10px;">{{ item.id }}</td>
             <td>{{ item }}</td>
-            <td><a href="{%% url %(model)s-details item.id %%}">show</a></td>
+            <td><a href="{%% url '%(model)s-details' item.id %%}">show</a></td>
         </tr>
     {%% endfor %%}
     </table>
     <br />
     <input type="button" onclick="$('#add-form-div').toggle();" value="Add new %(model)s"><br /><br />
     <div id="add-form-div" style="display: none;">
-        <form action="{%% url %(model)s-list %%}" method="POST" id="add-form">
+        <form action="{%% url '%(model)s-list' %%}" method="POST" id="add-form">
                 <div id="form-fields">
                     {%% csrf_token %%}
                     {{ form }}
@@ -153,7 +153,7 @@ TEMPLATE_DETAILS_CONTENT = """
             <tr>
                 <td style="padding: 10px;">{{ %(model)s.id }}</td>
                 <td>{{ %(model)s }}</td>
-                <td><input type="button" href="{%% url %(model)s-delete %(model)s.id %%}" id="delete-item" value="delete" /></td>
+                <td><input type="button" href="{%% url '%(model)s-delete' %(model)s.id %%}" id="delete-item" value="delete" /></td>
             </tr>
         </table>
         <br />
@@ -161,7 +161,7 @@ TEMPLATE_DETAILS_CONTENT = """
         <br />
         <input type="button" onclick="$('#add-form-div').toggle();" value="Edit %(model)s"><br /><br />
         <div id="add-form-div" style="display: none;">
-            <form action="{%% url %(model)s-details %(model)s.id %%}" method="POST" id="add-form">
+            <form action="{%% url '%(model)s-details' %(model)s.id %%}" method="POST" id="add-form">
                     <div id="form-fields">
                         {%% csrf_token %%}
                         {{ form }}
@@ -193,7 +193,7 @@ TEMPLATE_DETAILS_CONTENT = """
             });
         });
     </script>
-    <a href="{%% url %(model)s-list %%}">back to list</a>
+    <a href="{%% url '%(model)s-list' %%}">back to list</a>
 {%% endblock %%}
 """
 
@@ -271,7 +271,6 @@ class %(model)sTest(TestCase):
 
 
 class Scaffold(object):
-
     def _info(self, msg, indent=0):
         print("{0} {1}".format("\t" * int(indent), msg))
 
@@ -319,12 +318,16 @@ class Scaffold(object):
             for line in import_file.readlines():
                 if 'from django.shortcuts import render, redirect, get_object_or_404' in line:
                     need_import_shortcut = False
+
                 if 'from django.core.urlresolvers import reverse' in line:
                     need_import_urlresolvers = False
+
                 if 'from django.contrib.auth.models import User, Group' in line:
                     need_import_users = False
+
                 if 'from django.middleware.csrf import get_token' in line:
                     need_import_token = False
+
                 if 'from django_common.http import JsonResponse' in line:
                     need_import_JsonResponse = False
 
@@ -353,45 +356,53 @@ class Scaffold(object):
     def get_field(self, field):
         field = field.split(':')
         field_type = field[0]
+
         if field_type.lower() == 'char':
             try:
                 length = field[2]
-            except:
+            except IndexError:
                 length = 255
+
             try:
                 null = field[3]
                 null = 'False'
-            except:
+            except IndexError:
                 null = 'True'
+
             return CHARFIELD_TEMPLATE % {'name': field[1], 'length': length, 'null': null}
         elif field_type.lower() == 'text':
             try:
                 null = field[2]
                 null = 'False'
-            except:
+            except IndexError:
                 null = 'True'
+
             return TEXTFIELD_TEMPLATE % {'name': field[1], 'null': null}
         elif field_type.lower() == 'int':
             try:
                 null = field[2]
                 null = 'False'
-            except:
+            except IndexError:
                 null = 'True'
+
             try:
                 default = field[3]
-            except:
+            except IndexError:
                 default = None
+
             return INTEGERFIELD_TEMPLATE % {'name': field[1], 'null': null, 'default': default}
         elif field_type.lower() == 'decimal':
             try:
                 null = field[4]
                 null = 'False'
-            except:
+            except IndexError:
                 null = 'True'
+
             try:
                 default = field[5]
-            except:
+            except IndexError:
                 default = None
+
             return DECIMALFIELD_TEMPLATE % {
                 'name': field[1],
                 'digits': field[2],
@@ -403,12 +414,14 @@ class Scaffold(object):
             try:
                 null = field[2]
                 null = 'False'
-            except:
+            except IndexError:
                 null = 'True'
+
             try:
                 default = field[3]
-            except:
+            except IndexError:
                 default = None
+
             return DATETIMEFIELD_TEMPLATE % {'name': field[1], 'null': null, 'default': default}
         elif field_type.lower() == 'foreign':
             foreign = field[2]
@@ -501,12 +514,13 @@ class Scaffold(object):
 
         # Open views.py to append
         with open(view_path, 'a') as view_file:
-            view_file.write('\n'.join(import_line for import_line in import_list))
-            view_file.write(''.join(view for view in view_list))
+            view_file.write('\n'.join([import_line for import_line in import_list]))
+            view_file.write(''.join([view for view in view_list]))
 
     def create_model(self):
         self._info("   Model   ")
         self._info("===========")
+
         # Open models.py to read
         with open('{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 'r') as fp:
             self.models_file = fp
@@ -533,7 +547,7 @@ class Scaffold(object):
 
         # Open models.py to append
         with open('{0}{1}/models.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 'a') as fp:
-            fp.write(''.join(import_line for import_line in self.imports))
+            fp.write(''.join([import_line for import_line in self.imports]))
             fp.write(MODEL_TEMPLATE % (self.model, ''.join(field for field in fields)))
 
     def create_templates(self):
@@ -619,6 +633,7 @@ class Scaffold(object):
                     'app': self.app,
                     'model': self.model.lower(),
                 })
+
             self._info('create\t{0}{1}/urls.py'.format(self.SCAFFOLD_APPS_DIR, self.app), 1)
 
     def create_admin(self):
@@ -720,6 +735,7 @@ class Scaffold(object):
                     'model': self.model,
                     'lower_model': self.model.lower(),
                 })
+
             self._info('added\t{0}{1}/tests.py\t{2}'.format(self.SCAFFOLD_APPS_DIR, self.app,
                                                             self.model.lower()), 1)
 

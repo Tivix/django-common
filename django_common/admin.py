@@ -9,11 +9,6 @@ from django.contrib.admin.helpers import AdminForm
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.utils.translation import ugettext as _
-# ugly hack required for Python 2/3 compat
-try:
-    from django.utils.encoding import force_unicode
-except ImportError:
-    from django.utils.encoding import force_text as force_unicode
 from django.utils.html import escape
 from django.forms.formsets import all_valid
 from django.contrib.admin import helpers
@@ -22,7 +17,8 @@ from django.forms.models import (inlineformset_factory, BaseInlineFormSet)
 from django import forms
 from django.utils.functional import curry
 
-from django_common.compat import atomic_decorator
+from django_common.compat import atomic_decorator, force_unicode
+
 
 csrf_protect_m = method_decorator(csrf_protect)
 
@@ -37,8 +33,10 @@ def __init__(self, form, fieldsets, prepopulated_fields, readonly_fields=None, m
         normalized data.
         """
         result = []
+
         for name, options in fieldsets:
             result.append((name, normalize_dictionary(options)))
+
         return result
 
     def normalize_dictionary(data_dict):
@@ -50,17 +48,23 @@ def __init__(self, form, fieldsets, prepopulated_fields, readonly_fields=None, m
             if not isinstance(key, str):
                 del data_dict[key]
                 data_dict[str(key)] = value
+
         return data_dict
+
     if isinstance(prepopulated_fields, list):
         prepopulated_fields = dict()
+
     self.form, self.fieldsets = form, normalize_fieldsets(fieldsets)
     self.prepopulated_fields = [{
         'field': form[field_name],
         'dependencies': [form[f] for f in dependencies]
     } for field_name, dependencies in prepopulated_fields.items()]
+
     self.model_admin = model_admin
+
     if readonly_fields is None:
         readonly_fields = ()
+
     self.readonly_fields = readonly_fields
 
 AdminForm.__init__ = __init__
@@ -71,36 +75,43 @@ class NestedModelAdmin(ModelAdmin):
     @csrf_protect_m
     @atomic_decorator
     def add_view(self, request, form_url='', extra_context=None):
-        "The 'add' admin view for this model."
+        """The 'add' admin view for this model."""
         model = self.model
         opts = model._meta
 
         if not self.has_add_permission(request):
             raise PermissionDenied
+
         ModelForm = self.get_form(request)
         formsets = []
 
         if request.method == 'POST':
             form = ModelForm(request.POST, request.FILES)
+
             if form.is_valid():
                 new_object = self.save_form(request, form, change=False)
                 form_validated = True
             else:
                 form_validated = False
                 new_object = self.model()
+
             prefixes = {}
 
             for FormSet, inline in zip(self.get_formsets(request),
                                        self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
+
                 if prefixes[prefix] != 1:
                     prefix = "{0}-{1}".format(prefix, prefixes[prefix])
+
                 formset = FormSet(data=request.POST, files=request.FILES,
                                   instance=new_object,
                                   save_as_new="_saveasnew" in request.POST,
                                   prefix=prefix, queryset=inline.queryset(request))
+
                 formsets.append(formset)
+
                 for inline in self.get_inline_instances(request):
                     # If this is the inline that matches this formset, and
                     # we have some nested inlines to deal with, then we need
@@ -118,30 +129,38 @@ class NestedModelAdmin(ModelAdmin):
             if all_valid(formsets) and form_validated:
                 self.save_model(request, new_object, form, change=False)
                 form.save_m2m()
+
                 for formset in formsets:
                     self.save_formset(request, form, formset, change=False)
 
                 self.log_addition(request, new_object)
+
                 return self.response_add(request, new_object)
         else:
             # Prepare the dict of initial data from the request.
             # We have to special-case M2Ms as a list of comma-separated PKs.
             initial = dict(request.GET.items())
+
             for k in initial:
                 try:
                     f = opts.get_field(k)
                 except models.FieldDoesNotExist:
                     continue
+
                 if isinstance(f, models.ManyToManyField):
                     initial[k] = initial[k].split(",")
+
             form = ModelForm(initial=initial)
             prefixes = {}
+
             for FormSet, inline in zip(self.get_formsets(request),
                                        self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
+
                 if prefixes[prefix] != 1:
                     prefix = "{0}-{1}".format(prefix, prefixes[prefix])
+
                 formset = FormSet(instance=self.model(), prefix=prefix,
                                   queryset=inline.queryset(request))
                 formsets.append(formset)
@@ -149,9 +168,10 @@ class NestedModelAdmin(ModelAdmin):
         adminForm = helpers.AdminForm(form, list(self.get_fieldsets(request)),
                                       self.prepopulated_fields, self.get_readonly_fields(request),
                                       model_admin=self)
-        media = self.media + adminForm.media
 
+        media = self.media + adminForm.media
         inline_admin_formsets = []
+
         for inline, formset in zip(self.get_inline_instances(request), formsets):
             fieldsets = list(inline.get_fieldsets(request))
             readonly = list(inline.get_readonly_fields(request))
@@ -164,8 +184,11 @@ class NestedModelAdmin(ModelAdmin):
                         instance = form.instance
                     else:
                         instance = None
+
                     form.inlines = inline.get_inlines(request, instance, prefix=form.prefix)
+
                 inline_admin_formset.inlines = inline.get_inlines(request)
+
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
 
@@ -179,7 +202,9 @@ class NestedModelAdmin(ModelAdmin):
             'errors': helpers.AdminErrorList(form, formsets),
             'app_label': opts.app_label,
         }
+
         context.update(extra_context or {})
+
         return self.render_change_form(request, context, form_url=form_url, add=True)
 
     @csrf_protect_m
@@ -202,19 +227,24 @@ class NestedModelAdmin(ModelAdmin):
 
         ModelForm = self.get_form(request, obj)
         formsets = []
+
         if request.method == 'POST':
             form = ModelForm(request.POST, request.FILES, instance=obj)
+
             if form.is_valid():
                 form_validated = True
                 new_object = self.save_form(request, form, change=True)
             else:
                 form_validated = False
                 new_object = obj
+
             prefixes = {}
+
             for FormSet, inline in zip(self.get_formsets(request, new_object),
                                        self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
                 prefixes[prefix] = prefixes.get(prefix, 0) + 1
+
                 if prefixes[prefix] != 1:
                     prefix = "{0}-{1}".format(prefix, prefixes[prefix])
                 formset = FormSet(request.POST, request.FILES,
@@ -222,6 +252,7 @@ class NestedModelAdmin(ModelAdmin):
                                   queryset=inline.queryset(request))
 
                 formsets.append(formset)
+
                 for inline in self.get_inline_instances(request):
                     # If this is the inline that matches this formset, and
                     # we have some nested inlines to deal with, then we need
@@ -239,16 +270,19 @@ class NestedModelAdmin(ModelAdmin):
             if all_valid(formsets) and form_validated:
                 self.save_model(request, new_object, form, change=True)
                 form.save_m2m()
+
                 for formset in formsets:
                     self.save_formset(request, form, formset, change=True)
 
                 change_message = self.construct_change_message(request, form, formsets)
                 self.log_change(request, new_object, change_message)
+
                 return self.response_change(request, new_object)
 
         else:
             form = ModelForm(instance=obj)
             prefixes = {}
+
             for FormSet, inline in zip(self.get_formsets(request, obj),
                                        self.get_inline_instances(request)):
                 prefix = FormSet.get_default_prefix()
@@ -264,8 +298,8 @@ class NestedModelAdmin(ModelAdmin):
                                       self.get_readonly_fields(request, obj),
                                       model_admin=self)
         media = self.media + adminForm.media
-
         inline_admin_formsets = []
+
         for inline, formset in zip(self.get_inline_instances(request), formsets):
             fieldsets = list(inline.get_fieldsets(request, obj))
             readonly = list(inline.get_readonly_fields(request, obj))
@@ -277,8 +311,11 @@ class NestedModelAdmin(ModelAdmin):
                         instance = form.instance
                     else:
                         instance = None
+
                     form.inlines = inline.get_inlines(request, instance, prefix=form.prefix)
+
                 inline_admin_formset.inlines = inline.get_inlines(request)
+
             inline_admin_formsets.append(inline_admin_formset)
             media = media + inline_admin_formset.media
 
@@ -293,11 +330,14 @@ class NestedModelAdmin(ModelAdmin):
             'errors': helpers.AdminErrorList(form, formsets),
             'app_label': opts.app_label,
         }
+
         context.update(extra_context or {})
+
         return self.render_change_form(request, context, change=True, obj=obj)
 
     def get_inlines(self, request, obj=None, prefix=None):
         nested_inlines = []
+
         for inline in self.get_inline_instances(request):
             FormSet = inline.get_formset(request, obj)
             prefix = "{0}-{1}".format(prefix, FormSet.get_default_prefix())
@@ -305,6 +345,7 @@ class NestedModelAdmin(ModelAdmin):
             fieldsets = list(inline.get_fieldsets(request, obj))
             nested_inline = helpers.InlineAdminFormSet(inline, formset, fieldsets)
             nested_inlines.append(nested_inline)
+
         return nested_inlines
 
 
@@ -333,24 +374,33 @@ class NestedTabularInline(BaseModelAdmin):
         self.parent_model = parent_model
         self.opts = self.model._meta
         super(NestedTabularInline, self).__init__()
+
         if self.verbose_name is None:
             self.verbose_name = self.model._meta.verbose_name
+
         if self.verbose_name_plural is None:
             self.verbose_name_plural = self.model._meta.verbose_name_plural
+
         self.inline_instances = []
+
         for inline_class in self.inlines:
             inline_instance = inline_class(self.model, self.admin_site)
             self.inline_instances.append(inline_instance)
 
     def _media(self):
         from django.conf import settings
+
         js = ['js/jquery.min.js', 'js/jquery.init.js', 'js/inlines.min.js']
+
         if self.prepopulated_fields:
             js.append('js/urlify.js')
             js.append('js/prepopulate.min.js')
+
         if self.filter_vertical or self.filter_horizontal:
             js.extend(['js/SelectBox.js', 'js/SelectFilter2.js'])
+
         return forms.Media(js=['{0}{1}'.format(settings.ADMIN_MEDIA_PREFIX, url) for url in js])
+
     media = property(_media)
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -365,6 +415,7 @@ class NestedTabularInline(BaseModelAdmin):
             exclude = []
         else:
             exclude = list(self.exclude)
+
         exclude.extend(kwargs.get("exclude", []))
         exclude.extend(self.get_readonly_fields(request, obj))
 
@@ -383,17 +434,21 @@ class NestedTabularInline(BaseModelAdmin):
             "can_delete": self.can_delete,
         }
         defaults.update(kwargs)
+
         return inlineformset_factory(self.parent_model, self.model, **defaults)
 
     def get_fieldsets(self, request, obj=None):
         if self.declared_fieldsets:
             return self.declared_fieldsets
+
         form = self.get_formset(request).form
         fields = form.base_fields.keys() + list(self.get_readonly_fields(request, obj))
+
         return [(None, {'fields': fields})]
 
     def get_inlines(self, request, obj=None, prefix=None):
         nested_inlines = []
+
         for inline in self.inline_instances:
             FormSet = inline.get_formset(request, obj)
             prefix = "{0}-{1}".format(prefix, FormSet.get_default_prefix())
@@ -401,4 +456,5 @@ class NestedTabularInline(BaseModelAdmin):
             fieldsets = list(inline.get_fieldsets(request, obj))
             nested_inline = helpers.InlineAdminFormSet(inline, formset, fieldsets)
             nested_inlines.append(nested_inline)
+
         return nested_inlines
