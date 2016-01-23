@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals, with_statement, divisio
 from django.db import models
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-from django.contrib.admin.util import unquote, flatten_fieldsets
+from django.contrib.admin.utils import unquote, flatten_fieldsets
 from django.contrib.admin.options import BaseModelAdmin, ModelAdmin
 from django.contrib.admin.helpers import AdminForm
 from django.core.exceptions import PermissionDenied
