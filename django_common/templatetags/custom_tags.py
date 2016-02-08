@@ -25,7 +25,9 @@ class FormFieldNode(template.Node):
 
         widget = form_field.field.widget
 
-        if isinstance(widget, widgets.RadioSelect):
+        if isinstance(widget, widgets.HiddenInput):
+            return form_field
+        elif isinstance(widget, widgets.RadioSelect):
             t = get_template('common/fragments/radio_field.html')
         elif isinstance(widget, widgets.CheckboxInput):
             t = get_template('common/fragments/checkbox_field.html')
