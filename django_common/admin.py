@@ -3,7 +3,6 @@ from __future__ import print_function, unicode_literals, with_statement, divisio
 from django.db import models
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-from django.contrib.admin.util import unquote, flatten_fieldsets
 from django.contrib.admin.options import BaseModelAdmin, ModelAdmin
 from django.contrib.admin.helpers import AdminForm
 from django.core.exceptions import PermissionDenied
@@ -17,7 +16,8 @@ from django.forms.models import (inlineformset_factory, BaseInlineFormSet)
 from django import forms
 from django.utils.functional import curry
 
-from django_common.compat import atomic_decorator, force_unicode
+from django_common.compat import (atomic_decorator, force_unicode,
+                                  unquote, flatten_fieldsets)
 
 
 csrf_protect_m = method_decorator(csrf_protect)
