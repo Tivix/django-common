@@ -1,7 +1,7 @@
 from __future__ import print_function, unicode_literals, with_statement, division
 
 import sys
-
+from django import VERSION
 from django.db import transaction
 from django.utils import encoding
 
@@ -21,6 +21,11 @@ elif hasattr(encoding, 'force_text'):
 else:
     force_unicode = lambda x: x
 
+
+if VERSION[1] >= 8:
+    from django.contrib.admin.utils import unquote, flatten_fieldsets
+else:
+    from django.contrib.admin.util import unquote, flatten_fieldsets
 
 if not PY2:
     string_types = (str,)
