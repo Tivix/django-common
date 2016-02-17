@@ -209,6 +209,15 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+0.8.0
+-----
+    - compatability code moved to compat.py
+    - ``generate_secret_key`` management command.
+    - Fix relating to https://code.djangoproject.com/ticket/17627, package name change.
+    - Pass form fields with HiddenInput widget through render_form_field
+    - string.format usage / other refactoring / more support for Python 3
+
+
 0.7.0
 -----
     - PEP8 codebase cleanup.
