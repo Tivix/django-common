@@ -199,8 +199,8 @@ Sample output:
 
 Optional arguments
 
-1. ``--length`` – is the length of the key ``default=50``
-2. ``--alphabet`` – is the alphabet to use to generate the key ``default=ascii letters + punctuation symbols``
+1. ``--length`` - is the length of the key ``default=50``
+2. ``--alphabet`` - is the alphabet to use to generate the key ``default=ascii letters + punctuation symbols``
 
 
 This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
