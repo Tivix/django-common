@@ -26,8 +26,8 @@ class JSONField(models.TextField):
     JSONField is a generic textfield that neatly serializes/unserializes JSON objects seamlessly
     """
 
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def to_python(self, value):
         """Convert our string value to JSON after we load it from the DB"""
@@ -219,7 +219,9 @@ class BaseEncryptedField(models.Field):
 
 
 class EncryptedTextField(BaseEncryptedField):
-    __metaclass__ = models.SubfieldBase
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def get_internal_type(self):
         return 'TextField'
@@ -241,7 +243,9 @@ except ImportError:
 
 
 class EncryptedCharField(BaseEncryptedField):
-    __metaclass__ = models.SubfieldBase
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def get_internal_type(self):
         return "CharField"
