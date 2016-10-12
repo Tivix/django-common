@@ -3,10 +3,10 @@
         {{ form_field }}
         {{ form_field.label }} {% if form_field.field.required %}<span class="req">*</span>{% endif %}
         {% if help_text %}
-            <span class="help-inline">{{ help_text }}</span>
+            <span class="help-inline">{{ help_text|safe }}</span>
         {% endif %}
         {% if form_field.errors %}
-            <span class="help-block">{{ form_field.errors }}</span>
+            <span class="help-block">{{ form_field.errors|safe }}</span>
         {% endif %}
     </label>
 </div>

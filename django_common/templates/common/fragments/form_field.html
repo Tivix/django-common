@@ -5,10 +5,10 @@
     <div class="controls">
         {{ form_field }}
         {% if form_field.help_text %}
-            <span class="help-inline">{{ form_field.help_text }}</span>
+            <span class="help-inline">{{ form_field.help_text|safe }}</span>
         {% endif %}
         {% if form_field.errors %}
-            <span class="help-block">{{ form_field.errors }}</span>
+            <span class="help-block">{{ form_field.errors|safe }}</span>
         {% endif %}
     </div>
 </div>

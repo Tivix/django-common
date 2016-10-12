@@ -3,10 +3,10 @@
         <label>
             {{ form_field.label }}
             {% if help_text %}
-                <span class="help-inline">{{ help_text }}</span>
+                <span class="help-inline">{{ help_text|safe }}</span>
             {% endif %}
             {% if form_field.errors %}
-                <span class="help-inline">{{ form_field.errors }}</span>
+                <span class="help-inline">{{ form_field.errors|safe }}</span>
             {% endif %}
         </label>
         {{ form_field }}
