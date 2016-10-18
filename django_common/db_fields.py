@@ -43,7 +43,7 @@ class JSONField(models.TextField):
 
         return value
 
-    def get_db_prep_save(self, value, connection=None):
+    def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
 
         if value == "":
@@ -52,7 +52,7 @@ class JSONField(models.TextField):
         if isinstance(value, dict):
             value = json.dumps(value, cls=DjangoJSONEncoder)
 
-        return super(JSONField, self).get_db_prep_save(value, connection)
+        return value
 
 
 class UniqueSlugField(fields.SlugField):
@@ -182,7 +182,7 @@ class BaseEncryptedField(models.Field):
     """
     def __init__(self, *args, **kwargs):
         cipher = kwargs.pop('cipher', 'AES')
-        imp = __import__('Crypto.Cipher', globals(), locals(), [cipher], -1)
+        imp = __import__('Crypto.Cipher', globals(), locals(), [bytes(cipher)], -1)
         self.cipher = getattr(imp, cipher).new(settings.SECRET_KEY[:32])
         self.prefix = '${0}$'.format(cipher)
 
