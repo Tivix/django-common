@@ -198,20 +198,22 @@ TEMPLATE_DETAILS_CONTENT = """
 """
 
 URL_CONTENT = """
-from django.conf.urls.defaults import *
+from django.conf.urls import url
 from django.contrib.auth import views as auth_views
 
-urlpatterns = patterns('%(app)s.views',
-    url(r'^%(model)s/$', '%(model)s_list', name='%(model)s-list'),
-    url(r'^%(model)s/(?P<id>\d+)/$', '%(model)s_details', name='%(model)s-details'),
-    url(r'^%(model)s/(?P<id>\d+)/delete/$', '%(model)s_delete', name='%(model)s-delete'),
-)
+from %(app)s import views
+
+urlpatterns = [
+    url(r'^%(model)s/$', views.%(model)s_list, name='%(model)s-list'),
+    url(r'^%(model)s/(?P<id>\d+)/$', views.%(model)s_details, name='%(model)s-details'),
+    url(r'^%(model)s/(?P<id>\d+)/delete/$', views.%(model)s_delete, name='%(model)s-delete'),
+]
 """
 
 URL_EXISTS_CONTENT = """
-    url(r'^%(model)s/$', '%(model)s_list', name='%(model)s-list'),
-    url(r'^%(model)s/(?P<id>\d+)/$', '%(model)s_details', name='%(model)s-details'),
-    url(r'^%(model)s/(?P<id>\d+)/delete/$', '%(model)s_delete', name='%(model)s-delete'),
+    url(r'^%(model)s/$', views.%(model)s_list, name='%(model)s-list'),
+    url(r'^%(model)s/(?P<id>\d+)/$', views.%(model)s_details, name='%(model)s-details'),
+    url(r'^%(model)s/(?P<id>\d+)/delete/$', views.%(model)s_delete, name='%(model)s-delete'),
 """
 
 ADMIN_CONTENT = """

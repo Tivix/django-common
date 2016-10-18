@@ -152,10 +152,10 @@ All data should be in place!
 
 Now you must add ``forum`` app to ``INSTALLED_APPS`` and include app in ``urls.py`` file by adding into urlpatterns::
 
-    urlpatterns = patterns('',
+    urlpatterns = [
         ...
-        (r'^', include('forum.urls')),
-    )
+        url(r'^', include('forum.urls')),
+    ]
 
 Now syncdb new app and you are ready to go::
 

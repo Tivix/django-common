@@ -2,16 +2,16 @@ from __future__ import print_function, unicode_literals, with_statement, divisio
 
 from django.core.management.base import BaseCommand
 
-from optparse import make_option
-
 from django_common.scaffold import Scaffold
 from django_common import settings
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--model', default=None, dest='model',
-                    help="""model name - only one model name per run is allowed. \n
+    def add_arguments(self, parser):
+        parser.add_argument('app_name', nargs='*')
+        parser.add_argument(
+            '--model', default=None, dest='model', nargs='+', help="""
+            model name - only one model name per run is allowed. \n
             It requires additional fields parameters:
 
             char - CharField \t\t\t\t
@@ -27,14 +27,24 @@ class Command(BaseCommand):
                 --model blog foreign:blog:Blog, foreign:post:Post, foreign:added_by:User \t\t
                 --model finance decimal:total_cost:10:2
 
-            """),
-    )
+            """
+        )
 
     def handle(self, *args, **options):
-        if len(args) == 0:
+        if len(options['app_name']) == 0:
             print("You must provide app name. For example:\n\npython manage.py scallfold my_app\n")
             return
-        scaffold = Scaffold(args[0], options['model'], args)
+
+        app_name = options['app_name'][0]
+        model_data = options['model']
+        if model_data:
+            model_name = model_data[0]
+            fields = model_data[1:]
+        else:
+            model_name = None
+            fields = None
+
+        scaffold = Scaffold(app_name, model_name, fields)
         scaffold.run()
 
     def get_version(self):
