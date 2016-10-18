@@ -202,12 +202,27 @@ Optional arguments
 1. ``--length`` - is the length of the key ``default=50``
 2. ``--alphabet`` - is the alphabet to use to generate the key ``default=ascii letters + punctuation symbols``
 
+Django settings keys
+--------------------
+
+- DOMAIN_NAME - Domain name, ``"www.example.com"``
+- WWW_ROOT - Root website url, ``"https://www.example.com/"``
+- IS_DEV - Current environment is development environment
+- IS_PROD - Current environment is production environment
+
 
 This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 
 
 Changelog
 =========
+
+0.9.0
+-----
+    - Django 1.10 support
+    - README.txt invalid characters fix
+    - Add support for custom user model in EmailBackend
+    - Fixes for DB fields and management commands
 
 0.8.0
 -----

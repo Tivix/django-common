@@ -28,7 +28,7 @@ setup(
     keywords='django',
     zip_safe=False,
     install_requires=[
-        'Django>=1.4.2'
+        'Django>=1.8.0'
     ],
     test_suite='django_common.tests',
     include_package_data=True,
