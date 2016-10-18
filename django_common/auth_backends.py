@@ -2,8 +2,10 @@ from __future__ import print_function, unicode_literals, with_statement, divisio
 
 import logging
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import User
+
+User = get_user_model()
 
 
 class EmailBackend(ModelBackend):
