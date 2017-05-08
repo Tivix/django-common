@@ -3,7 +3,6 @@ from __future__ import print_function, unicode_literals, with_statement, divisio
 from django import template
 from django.forms import widgets
 from django.template.loader import get_template
-from django.template import Context
 
 register = template.Library()
 
@@ -39,11 +38,11 @@ class FormFieldNode(template.Node):
         if self.help_text is None:
             self.help_text = form_field.help_text
 
-        return t.render(Context({
+        return t.render({
             'form_field': form_field,
             'help_text': self.help_text,
             'css_classes': self.css_classes
-        }))
+        })
 
 
 @register.tag
