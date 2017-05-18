@@ -11,7 +11,7 @@ try:
     import json
 except ImportError:
     from django.utils import simplejson as json
-from django.utils.encoding import force_text
+from django_common.compat import force_unicode
 from django.template import Context
 from django.template.loader import get_template
 from django.core import exceptions
@@ -76,12 +76,12 @@ def form_errors_serialize(form):
     for field in form.fields.keys():
         if field in form.errors:
             if form.prefix:
-                errors['{0}-{1}'.format(form.prefix, field)] = force_text(form.errors[field])
+                errors['{0}-{1}'.format(form.prefix, field)] = force_unicode(form.errors[field])
             else:
-                errors[field] = force_text(form.errors[field])
+                errors[field] = force_unicode(form.errors[field])
 
     if form.non_field_errors():
-        errors['non_field_errors'] = force_text(form.non_field_errors())
+        errors['non_field_errors'] = force_unicode(form.non_field_errors())
     return {'errors': errors}
 
 
