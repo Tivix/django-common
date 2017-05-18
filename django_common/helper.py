@@ -11,12 +11,11 @@ try:
     import json
 except ImportError:
     from django.utils import simplejson as json
-
+from django_common.compat import force_unicode
 from django.template import Context
 from django.template.loader import get_template
 from django.core import exceptions
 
-from django_common.compat import force_unicode
 from django_common.tzinfo import utc, Pacific
 
 
