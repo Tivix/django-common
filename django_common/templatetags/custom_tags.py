@@ -17,6 +17,7 @@ class FormFieldNode(template.Node):
         self.css_classes = css_classes[1:-1] if css_classes else css_classes
 
     def render(self, context):
+
         try:
             form_field = self.form_field.resolve(context)
         except template.VariableDoesNotExist:
@@ -35,12 +36,13 @@ class FormFieldNode(template.Node):
         else:
             t = get_template('common/fragments/form_field.html')
 
-        if self.help_text is None:
-            self.help_text = form_field.help_text
+        help_text = self.help_text
+        if help_text is None:
+            help_text = form_field.help_text
 
         return t.render({
             'form_field': form_field,
-            'help_text': self.help_text,
+            'help_text': help_text,
             'css_classes': self.css_classes
         })
 
