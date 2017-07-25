@@ -164,7 +164,7 @@ def send_mail_using_template(subject, template_name, from_email, recipient_email
                              in_thread=False, files=None, html=False, reply_to=None, bcc=None,
                              cc=None, files_manually=None):
     t = get_template(template_name)
-    message = t.render(Context(context_map))
+    message = t.render(context_map)
     if in_thread:
         return send_mail_in_thread(subject, message, from_email, recipient_emails, files, html,
                                    reply_to, bcc, cc, files_manually)
