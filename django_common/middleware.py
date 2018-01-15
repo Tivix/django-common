@@ -4,10 +4,15 @@ from django.conf import settings
 from django.http import HttpResponsePermanentRedirect, HttpResponseRedirect
 from django_common.session import SessionManager
 
+try:
+    from django.utils.deprecation import MiddlewareMixin
+except ImportError:
+    MiddlewareMixin = object
+
 WWW = 'www'
 
 
-class WWWRedirectMiddleware(object):
+class WWWRedirectMiddleware(MiddlewareMixin):
     """
     Redirect requests for example from http://www.mysirw.com/* to http://mysite.com/*
     """
@@ -20,7 +25,7 @@ class WWWRedirectMiddleware(object):
         return None
 
 
-class UserTimeTrackingMiddleware(object):
+class UserTimeTrackingMiddleware(MiddlewareMixin):
     """
     Tracking time user have been on site
     """
@@ -31,7 +36,7 @@ class UserTimeTrackingMiddleware(object):
             SessionManager(request).clear_usertime()
 
 
-class SSLRedirectMiddleware(object):
+class SSLRedirectMiddleware(MiddlewareMixin):
     """
     Redirects all the requests that are non SSL to a SSL url
     """
@@ -42,7 +47,7 @@ class SSLRedirectMiddleware(object):
         return None
 
 
-class NoSSLRedirectMiddleware(object):
+class NoSSLRedirectMiddleware(MiddlewareMixin):
     """
     Redirects if a non-SSL required view is hit. This middleware assumes a SSL protected view
     has been decorated by the 'ssl_required' decorator (see decorators.py)
