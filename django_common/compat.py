@@ -22,7 +22,7 @@ else:
     force_unicode = lambda x: x
 
 
-if VERSION[1] >= 8:
+if (VERSION[0] == 1 and VERSION[1] >= 8) or VERSION[0] > 1:
     from django.contrib.admin.utils import unquote, flatten_fieldsets
 else:
     from django.contrib.admin.util import unquote, flatten_fieldsets
