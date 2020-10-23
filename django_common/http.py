@@ -1,5 +1,6 @@
 from __future__ import print_function, unicode_literals, with_statement, division
 
+from django.shortcuts import render
 from django.http import HttpResponse
 
 try:
@@ -56,3 +57,14 @@ class XMLResponse(HttpResponse):
         data is the entire xml body/document
         """
         super(XMLResponse, self).__init__(data, mimetype='text/xml')
+
+
+class HtmlResponse(HttpResponse):
+    def __init__(self, body="", head="", title=""):
+        context = {
+            "title": title,
+            "body": body,
+            "head": head,
+        }
+        data = render(None, "common/fragments/html_response.html", context=context)
+        super(HtmlResponse, self).__init__(data)
