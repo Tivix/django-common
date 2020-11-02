@@ -5,6 +5,7 @@ import hashlib
 import os
 import logging
 import datetime
+import functools
 import threading
 
 try:
@@ -236,4 +237,4 @@ def curry(func, *a, **kw):
     """
     A feature cut from django itself
     """
-    return partial(func, *a, **kw)
+    return functools.partial(func, *a, **kw)
