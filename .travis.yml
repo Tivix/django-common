@@ -12,7 +12,6 @@ matrix:
       env: DJANGO=1.7.4
     - python: "3.4"
       env: DJANGO=1.6.9
-install:
-  - pip install -q Django==$DJANGO --use-mirrors
+
 script:
-  - python setup.py test
+  - python setup.py install

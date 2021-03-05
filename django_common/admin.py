@@ -14,7 +14,7 @@ from django.contrib.admin import helpers
 from django.utils.safestring import mark_safe
 from django.forms.models import (inlineformset_factory, BaseInlineFormSet)
 from django import forms
-from django.utils.functional import curry
+from .helper import curry
 
 from django_common.compat import (atomic_decorator, force_unicode,
                                   unquote, flatten_fieldsets)

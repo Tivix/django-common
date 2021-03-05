@@ -5,6 +5,7 @@ import hashlib
 import os
 import logging
 import datetime
+import functools
 import threading
 
 try:
@@ -230,3 +231,10 @@ def chunks(l, n):
     """
     for i in range(0, len(l), n):
         yield l[i:i + n]
+
+
+def curry(func, *a, **kw):
+    """
+    A feature cut from django itself
+    """
+    return functools.partial(func, *a, **kw)
