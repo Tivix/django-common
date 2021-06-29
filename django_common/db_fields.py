@@ -49,7 +49,7 @@ class JSONField(models.TextField):
         if value == "":
             return None
 
-        if isinstance(value, dict):
+        if isinstance(value, (dict, list)):
             value = json.dumps(value, cls=DjangoJSONEncoder)
 
         return value
