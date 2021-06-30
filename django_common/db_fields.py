@@ -26,7 +26,7 @@ class JSONField(models.TextField):
     JSONField is a generic textfield that neatly serializes/unserializes JSON objects seamlessly
     """
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, *args, **kwargs):
         return self.to_python(value)
 
     def to_python(self, value):
