@@ -15,6 +15,9 @@ from django.utils.safestring import mark_safe
 from django.forms.models import (inlineformset_factory, BaseInlineFormSet)
 from django import forms
 from .helper import curry
+from django.shortcuts import resolve_url
+from django.utils.html import format_html
+from django.contrib.admin.templatetags.admin_urls import admin_urlname
 
 from django_common.compat import (atomic_decorator, force_unicode,
                                   unquote, flatten_fieldsets)
@@ -458,3 +461,28 @@ class NestedTabularInline(BaseModelAdmin):
             nested_inlines.append(nested_inline)
 
         return nested_inlines
+
+
+class AdminChangeLinksMixin:
+    change_links = []
+
+    def __init__(self, *args, **kwargs):
+        for field_name in self.change_links:
+            def func(obj):
+                field = getattr(obj, field_name)
+
+                # noinspection PyProtectedMember
+                url_on_field_change = format_html(
+                    "<a href='{}'>{}</a>".format(
+                        resolve_url(admin_urlname(field._meta, "change"), field.pk), str(field)
+                    )
+                )
+                return url_on_field_change
+            function_name = "{}_link".format(field_name)
+
+            setattr(self, function_name, func)
+            getattr(self, function_name).short_description = function_name
+
+            self.list_display.append(function_name)
+
+        super(AdminChangeLinksMixin, self).__init__(*args, **kwargs)
