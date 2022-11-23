@@ -217,6 +217,10 @@ This open-source app is brought to you by Tivix, Inc. ( http://tivix.com/ )
 Changelog
 =========
 
+0.9.2
+-----
+    - Change for Django 2.X
+
 0.9.1
 -----
     - Change for Django 1.10 - render() must be called with a dict, not a Context
