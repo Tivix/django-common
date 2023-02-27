@@ -1,4 +1,5 @@
 from __future__ import print_function, unicode_literals, with_statement, division
+from functools import partial as curry
 
 from django.db import models
 from django.views.decorators.csrf import csrf_protect
@@ -7,14 +8,13 @@ from django.contrib.admin.options import BaseModelAdmin, ModelAdmin
 from django.contrib.admin.helpers import AdminForm
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext_lazy as _
 from django.utils.html import escape
 from django.forms.formsets import all_valid
 from django.contrib.admin import helpers
 from django.utils.safestring import mark_safe
 from django.forms.models import (inlineformset_factory, BaseInlineFormSet)
 from django import forms
-from django.utils.functional import curry
 
 from django_common.compat import (atomic_decorator, force_unicode,
                                   unquote, flatten_fieldsets)
